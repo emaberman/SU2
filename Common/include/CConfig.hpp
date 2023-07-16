@@ -618,6 +618,7 @@ private:
   su2double Inc_Outlet_Damping;    /*!< \brief Damping factor applied to the iterative updates to the pressure at a mass flow outlet in incompressible flow. */
   bool Inc_Inlet_UseNormal;        /*!< \brief Flag for whether to use the local normal as the flow direction for an incompressible pressure inlet. */
   su2double Linear_Solver_Error;   /*!< \brief Min error of the linear solver for the implicit formulation. */
+  su2double Turb_Linear_Solver_Error;   /*!< \brief Min error of the linear solver for the implicit formulation. */
   su2double Deform_Linear_Solver_Error;          /*!< \brief Min error of the linear solver for the implicit formulation. */
   su2double Linear_Solver_Smoother_Relaxation;   /*!< \brief Relaxation factor for iterative linear smoothers. */
   unsigned long Linear_Solver_Iter;              /*!< \brief Max iterations of the linear solver for the implicit formulation. */
@@ -4203,6 +4204,12 @@ public:
    */
   su2double GetLinear_Solver_Error(void) const { return Linear_Solver_Error; }
 
+  /*!
+   * \brief Get min error of the linear solver for the implicit formulation.
+   * \return Min error of the linear solver for the implicit formulation.
+   */
+  su2double GetTurb_Linear_Solver_Error(void) const { return Turb_Linear_Solver_Error; }
+  
   /*!
    * \brief Get min error of the linear solver for the implicit formulation.
    * \return Min error of the linear solver for the implicit formulation.

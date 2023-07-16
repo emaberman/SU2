@@ -2624,6 +2624,7 @@ enum class LINEAR_SOLVER_MODE {
   STANDARD,        /*!< \brief Operate in standard mode. */
   MESH_DEFORM,     /*!< \brief Operate in mesh deformation mode. */
   GRADIENT_MODE,   /*!< \brief Operate in gradient smoothing mode. */
+  TURBULENCE,      /*!< \brief Operate in turbulence mode. */
 };
 
 /*!
