@@ -572,6 +572,38 @@ class CSysMatrix {
     }
   }
 
+
+  /*!
+   * \brief Update 4 blocks ii, ij, ji, jj (add to i* sub from j*).
+   * \note This method assumes an FVM-type sparse pattern.
+   * \param[in] edge - Index of edge that connects iPoint and jPoint.
+   * \param[in] iPoint - Row to which we add the blocks.
+   * \param[in] jPoint - Row from which we subtract the blocks.
+   * \param[in] block_i - Adds to ii, subs from ji.
+   * \param[in] block_j - Adds to ij, subs from jj.
+   * \param[in] scale - Scale blocks during update (axpy type op).
+   */
+  template <class MatrixType, class OtherType = ScalarType>
+  inline void UpdateMMatrixBlocks(unsigned long iEdge, unsigned long iPoint, unsigned long jPoint, const MatrixType& block_i,
+                           const MatrixType& block_j, OtherType scale = 1) {
+    ScalarType* bii = &matrix[dia_ptr[iPoint] * nVar * nEqn];
+    ScalarType* bjj = &matrix[dia_ptr[jPoint] * nVar * nEqn];
+    ScalarType* bij = &matrix[edge_ptr(iEdge, 0) * nVar * nEqn];
+    ScalarType* bji = &matrix[edge_ptr(iEdge, 1) * nVar * nEqn];
+
+    unsigned long iVar, jVar, offset = 0;
+
+    for (iVar = 0; iVar < nVar; iVar++) {
+      for (jVar = 0; jVar < nEqn; jVar++) {
+        bii[offset] -= PassiveAssign(block_j[iVar][jVar] * scale);
+        bij[offset] += PassiveAssign(block_j[iVar][jVar] * scale);
+        bji[offset] -= PassiveAssign(block_i[iVar][jVar] * scale);
+        bjj[offset] += PassiveAssign(block_i[iVar][jVar] * scale);
+        ++offset;
+      }
+    }
+  }
+
   /*!
    * \brief Short-hand for the "subtractive" version (sub from i* add to j*) of UpdateBlocks.
    */

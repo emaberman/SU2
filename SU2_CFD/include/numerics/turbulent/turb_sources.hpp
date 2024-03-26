@@ -862,10 +862,20 @@ class CSourcePieceWise_TurbSST final : public CNumerics {
 
       /*--- Implicit part ---*/
 
-      Jacobian_i[0][0] = -beta_star * ScalarVar_i[1] * Volume;
-      Jacobian_i[0][1] = -beta_star * ScalarVar_i[0] * Volume;
+
+      su2double rok = Density_i * ScalarVar_i[0];
+      su2double ik1   = -max(dk - pk,0.0) / rok;
+      su2double ik2   = -pk / rok;
+      
+      su2double row = Density_i * ScalarVar_i[1];
+      su2double iw1   = -max(dw - pw,0.0) / row;
+      su2double iw2   = -(pw + dw)/ row;
+      
+
+      Jacobian_i[0][0] = (ik1 + ik2) * Volume;
+      Jacobian_i[0][1] = 0.0;
       Jacobian_i[1][0] = 0.0;
-      Jacobian_i[1][1] = -2.0 * beta_blended * ScalarVar_i[1] * Volume;
+      Jacobian_i[1][1] = (iw1 + iw2) * Volume;
     }
 
     AD::SetPreaccOut(Residual, nVar);

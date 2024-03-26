@@ -73,6 +73,10 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
     LinSysRes.Initialize(nPoint, nPointDomain, nVar, 0.0);
     System.SetxIsZero(true);
 
+    /*--- Initialization of the Stability Treatment ---*/
+    //if stability=true
+    Diagonal_Sum.Initialize(nPoint, nPointDomain, 1, 0.0);
+
     if (ReducerStrategy)
       EdgeFluxes.Initialize(geometry->GetnEdge(), geometry->GetnEdge(), nVar, nullptr);
 
