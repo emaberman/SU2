@@ -353,8 +353,6 @@ class CScalarSolver : public CSolver {
   void Upwind_Residual(CGeometry* geometry, CSolver** solver_container, CNumerics** numerics_container,
                        CConfig* config, unsigned short iMesh) override;
 
-const su2double *const &NewFunction(CNumerics::ResidualType<> &residual);
-
   /*!
    * \brief Impose the Far Field boundary condition.
    * \param[in] geometry - Geometrical definition of the problem.
