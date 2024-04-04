@@ -108,12 +108,6 @@ CTurbSSTSolver::CTurbSSTSolver(CGeometry *geometry, CConfig *config, unsigned sh
     constants[9] = 0.44;  //gamma_2
     constants[10] = 10.0; // production limiter constant
   }
-  /*--- Initialize lower and upper limits---*/
-  lowerlimit[0] = 1.0e-10;
-  upperlimit[0] = 1.0e10;
-
-  lowerlimit[1] = 1.0e-4;
-  upperlimit[1] = 1.0e15;
 
   /*--- Far-field flow state quantities and initialization. ---*/
   su2double rhoInf, *VelInf, muLamInf, Intensity, viscRatio, muT_Inf;
@@ -128,6 +122,17 @@ CTurbSSTSolver::CTurbSSTSolver(CGeometry *geometry, CConfig *config, unsigned sh
 
   su2double kine_Inf  = 3.0/2.0*(VelMag2*Intensity*Intensity);
   su2double omega_Inf = rhoInf*kine_Inf/(muLamInf*viscRatio);
+
+su2double VelMag2 = GeometryToolbox::SquaredNorm(nDim, VelInf);
+  su2double kine_Inf  = 3.0/2.0*(VelMag2*Intensity*Intensity);
+  su2double omega_Inf = rhoInf*kine_Inf/(muLamInf*viscRatio);
+  
+    /*--- Initialize lower and upper limits---*/
+  lowerlimit[0] = 1.0e-15 * kine_Inf;
+  upperlimit[0] = 1.0e10;
+
+  lowerlimit[1] = 1.0e-8 * omega_Inf;
+  upperlimit[1] = 1.0e16;
 
   Solution_Inf[0] = kine_Inf;
   Solution_Inf[1] = omega_Inf;
