@@ -78,6 +78,9 @@ class CScalarSolver : public CSolver {
   /*--- Edge fluxes for reducer strategy (see the notes in CEulerSolver.hpp). ---*/
   CSysVector<su2double> EdgeFluxes; /*!< \brief Flux across each edge. */
 
+/*--- stability modification for M matrix Jacobian Diagonal  ---*/
+  CSysVector<su2double> Diagonal_Sum;    /*!< \brief vector to store Diagonal of stability modification of implicit linear system. */
+  
   /*!
    * \brief The highest level in the variable hierarchy this solver can safely use.
    */
