@@ -95,10 +95,11 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
   const bool muscl = config->GetMUSCL();
   const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
                        (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
+  
 
-
-  // To be later controlled from cfg file
-  const bool Mmatrix= true;
+  // // To be later controlled from cfg file
+  // const bool Mmatrix= true;
 
   /*--- Clear residual and system matrix, not needed for
    * reducer strategy as we write over the entire matrix. ---*/
@@ -142,6 +143,7 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   const bool muscl = config->GetMUSCL();
   const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
                        (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
 
   /*--- Only reconstruct flow variables if MUSCL is on for flow (requires upwind) and turbulence. ---*/
   const bool musclFlow = config->GetMUSCL_Flow() && muscl && (config->GetKind_ConvNumScheme_Flow() == SPACE_UPWIND);
@@ -162,8 +164,8 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   su2double solution_i[MAXNVAR] = {0.0}, flowPrimVar_i[MAXNVARFLOW] = {0.0};
   su2double solution_j[MAXNVAR] = {0.0}, flowPrimVar_j[MAXNVARFLOW] = {0.0};
 
-  // To be later controlled from cfg file
-        const bool Mmatrix= true;
+  // // To be later controlled from cfg file
+  //       const bool Mmatrix= true;
 
   /*--- For hybrid parallel AD, pause preaccumulation if there is shared reading of
    * variables, otherwise switch to the faster adjoint evaluation mode. ---*/
