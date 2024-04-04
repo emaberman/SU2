@@ -122,10 +122,6 @@ CTurbSSTSolver::CTurbSSTSolver(CGeometry *geometry, CConfig *config, unsigned sh
 
   su2double kine_Inf  = 3.0/2.0*(VelMag2*Intensity*Intensity);
   su2double omega_Inf = rhoInf*kine_Inf/(muLamInf*viscRatio);
-
-su2double VelMag2 = GeometryToolbox::SquaredNorm(nDim, VelInf);
-  su2double kine_Inf  = 3.0/2.0*(VelMag2*Intensity*Intensity);
-  su2double omega_Inf = rhoInf*kine_Inf/(muLamInf*viscRatio);
   
     /*--- Initialize lower and upper limits---*/
   lowerlimit[0] = 1.0e-15 * kine_Inf;
