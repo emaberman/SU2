@@ -903,9 +903,9 @@ unsigned long CSysSolve<ScalarType>::Solve(CSysMatrix<ScalarType>& Jacobian, con
     }
 
     case LINEAR_SOLVER_MODE::TURBULENCE: {
-     KindSolver   = config->GetKind_Linear_Solver();
-      KindPrecond  = config->GetKind_Linear_Solver_Prec();
-      MaxIter      = config->GetLinear_Solver_Iter();
+     KindSolver   = config->GetKind_Turb_Linear_Solver();
+      KindPrecond  = config->GetKind_Turb_Linear_Solver_Prec();
+      MaxIter      = config->GetTurb_Linear_Solver_Iter();
       SolverTol    = SU2_TYPE::GetValue(config->GetTurb_Linear_Solver_Error());
       ScreenOutput = false;
       break;

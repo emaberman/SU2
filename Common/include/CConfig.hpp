@@ -517,6 +517,8 @@ private:
   Kind_Deform_Linear_Solver_Prec,        /*!< \brief Preconditioner of the linear solver. */
   Kind_Linear_Solver,                    /*!< \brief Numerical solver for the implicit scheme. */
   Kind_Linear_Solver_Prec,               /*!< \brief Preconditioner of the linear solver. */
+  Kind_Linear_Solver_Turb,                    /*!< \brief Numerical solver for for the turbulence model implicit scheme. */
+  Kind_Linear_Solver_Prec_Turb,               /*!< \brief Preconditioner of for the turbulence model linear solver. */
   Kind_DiscAdj_Linear_Solver,            /*!< \brief Linear solver for the discrete adjoint system. */
   Kind_DiscAdj_Linear_Prec,              /*!< \brief Preconditioner of the discrete adjoint linear solver. */
   Kind_TimeNumScheme,           /*!< \brief Global explicit or implicit time integration. */
@@ -618,10 +620,11 @@ private:
   su2double Inc_Outlet_Damping;    /*!< \brief Damping factor applied to the iterative updates to the pressure at a mass flow outlet in incompressible flow. */
   bool Inc_Inlet_UseNormal;        /*!< \brief Flag for whether to use the local normal as the flow direction for an incompressible pressure inlet. */
   su2double Linear_Solver_Error;   /*!< \brief Min error of the linear solver for the implicit formulation. */
-  su2double Turb_Linear_Solver_Error;   /*!< \brief Min error of the linear solver for the implicit formulation. */
+  su2double Linear_Solver_Error_Turb;   /*!< \brief Min error of the linear solver for the implicit formulation. */
   su2double Deform_Linear_Solver_Error;          /*!< \brief Min error of the linear solver for the implicit formulation. */
   su2double Linear_Solver_Smoother_Relaxation;   /*!< \brief Relaxation factor for iterative linear smoothers. */
   unsigned long Linear_Solver_Iter;              /*!< \brief Max iterations of the linear solver for the implicit formulation. */
+  unsigned long Linear_Solver_Iter_Turb;              /*!< \brief Max iterations of the linear solver for the Turbulence implicit formulation. */
   unsigned long Deform_Linear_Solver_Iter;       /*!< \brief Max iterations of the linear solver for the implicit formulation. */
   unsigned long Linear_Solver_Restart_Frequency; /*!< \brief Restart frequency of the linear solver for the implicit formulation. */
   unsigned long Linear_Solver_Prec_Threads;      /*!< \brief Number of threads per rank for ILU and LU_SGS preconditioners. */
@@ -4185,12 +4188,23 @@ public:
    */
   unsigned short GetKind_Linear_Solver(void) const { return Kind_Linear_Solver; }
 
+  /*!
+   * \brief Get the kind of solver for the implicit solver.
+   * \return Numerical solver for implicit formulation (solving the linear system).
+   */
+  unsigned short GetKind_Turb_Linear_Solver(void) const { return Kind_Linear_Solver_Turb; }
 
   /*!
    * \brief Get the kind of preconditioner for the implicit solver.
    * \return Numerical preconditioner for implicit formulation (solving the linear system).
    */
   unsigned short GetKind_Linear_Solver_Prec(void) const { return Kind_Linear_Solver_Prec; }
+
+/*!
+   * \brief Get the kind of preconditioner for the implicit solver.
+   * \return Numerical preconditioner for implicit formulation (solving the linear system).
+   */
+  unsigned short GetKind_Turb_Linear_Solver_Prec(void) const { return Kind_Linear_Solver_Prec_Turb; }
 
   /*!
    * \brief Get the kind of solver for the implicit solver.
@@ -4208,7 +4222,7 @@ public:
    * \brief Get min error of the linear solver for the implicit formulation.
    * \return Min error of the linear solver for the implicit formulation.
    */
-  su2double GetTurb_Linear_Solver_Error(void) const { return Turb_Linear_Solver_Error; }
+  su2double GetTurb_Linear_Solver_Error(void) const { return Linear_Solver_Error_Turb; }
   
   /*!
    * \brief Get min error of the linear solver for the implicit formulation.
@@ -4221,6 +4235,12 @@ public:
    * \return Max number of iterations of the linear solver for the implicit formulation.
    */
   unsigned long GetLinear_Solver_Iter(void) const { return Linear_Solver_Iter; }
+
+  /*!
+   * \brief Get max number of iterations of the turbulence linear solver for the implicit formulation.
+   * \return Max number of iterations of the linear solver for the implicit formulation.
+   */
+  unsigned long GetTurb_Linear_Solver_Iter(void) const { return Linear_Solver_Iter_Turb; }
 
   /*!
    * \brief Get max number of iterations of the linear solver for the implicit formulation.
