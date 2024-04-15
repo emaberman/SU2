@@ -95,6 +95,11 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
   const bool muscl = config->GetMUSCL();
   const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
                        (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
+  
+
+  // // To be later controlled from cfg file
+  // const bool Mmatrix= true;
 
   /*--- Clear residual and system matrix, not needed for
    * reducer strategy as we write over the entire matrix. ---*/
@@ -102,6 +107,9 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
     LinSysRes.SetValZero();
     if (implicit) {
       Jacobian.SetValZero();
+      if(Mmatrix){
+        Diagonal_Sum.SetValZero();  
+      }
     } else {
       SU2_OMP_BARRIER
     }
@@ -135,6 +143,7 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   const bool muscl = config->GetMUSCL();
   const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
                        (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
 
   /*--- Only reconstruct flow variables if MUSCL is on for flow (requires upwind) and turbulence. ---*/
   const bool musclFlow = config->GetMUSCL_Flow() && muscl && (config->GetKind_ConvNumScheme_Flow() == SPACE_UPWIND);
@@ -154,6 +163,9 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   /*--- Static arrays of MUSCL-reconstructed flow primitives and turbulence variables (thread safety). ---*/
   su2double solution_i[MAXNVAR] = {0.0}, flowPrimVar_i[MAXNVARFLOW] = {0.0};
   su2double solution_j[MAXNVAR] = {0.0}, flowPrimVar_j[MAXNVARFLOW] = {0.0};
+
+  // // To be later controlled from cfg file
+  //       const bool Mmatrix= true;
 
   /*--- For hybrid parallel AD, pause preaccumulation if there is shared reading of
    * variables, otherwise switch to the faster adjoint evaluation mode. ---*/
@@ -265,7 +277,7 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
           numerics->SetScalarVar(solution_i, solution_j);
         }
       }
-
+ 
       /*--- Convective flux ---*/
       su2double EdgeMassFlux = 0.0;
       if (bounded_scalar) {
@@ -283,7 +295,24 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
       } else {
         LinSysRes.AddBlock(iPoint, residual);
         LinSysRes.SubtractBlock(jPoint, residual);
-        if (implicit) Jacobian.UpdateBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+        
+        
+        if (implicit){
+          if (Mmatrix){
+            Jacobian.UpdateMMatrixBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+            Diagonal_Sum.AddBlock(iPoint, *residual.jacobian_i);
+            Diagonal_Sum.AddBlock(iPoint, *residual.jacobian_j);
+            Diagonal_Sum.SubtractBlock(jPoint, *residual.jacobian_i);
+            Diagonal_Sum.SubtractBlock(jPoint, *residual.jacobian_j);
+            
+            
+
+          } else {
+            Jacobian.UpdateBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+            }
+        } 
+      
+      
       }
 
       /*--- Apply convective flux correction to negate the effects of flow divergence in case of incompressible flow.
@@ -337,6 +366,14 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
       END_SU2_OMP_FOR
     }
   }
+
+  if (Mmatrix) {
+      SU2_OMP_FOR_STAT(omp_chunk_size)
+      for (unsigned long iPoint = 0; iPoint < nPoint; ++iPoint) {
+        Jacobian.AddVal2Diag(iPoint, max(*Diagonal_Sum.GetBlock(iPoint),0.0));
+      }
+      END_SU2_OMP_FOR
+    }
 }
 
 template <class VariableType>

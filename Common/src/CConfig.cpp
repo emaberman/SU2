@@ -1978,6 +1978,9 @@ void CConfig::SetConfig_Options() {
   /*!\brief CONV_NUM_METHOD_TURB
    *  \n DESCRIPTION: Convective numerical method \ingroup Config*/
   addConvectOption("CONV_NUM_METHOD_TURB", Kind_ConvNumScheme_Turb, Kind_Centered_Turb, Kind_Upwind_Turb);
+/*!\brief Mmatrix \n DESCRIPTION: Check if the M-matrix should be used for scalar upwind scheme \ingroup Config*/
+  addBoolOption("TURB_M_MATRIX_JAC", MmatrixTurbJac, false);
+  
 
   /*!\brief MUSCL_ADJTURB \n DESCRIPTION: Check if the MUSCL scheme should be used \ingroup Config*/
   addBoolOption("MUSCL_ADJTURB", MUSCL_AdjTurb, false);

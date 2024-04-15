@@ -38,6 +38,7 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
   su2double Density_Inf, Viscosity_Inf, Factor_nu_Inf, Factor_nu_Engine, Factor_nu_ActDisk;
 
   bool multizone = config->GetMultizone_Problem();
+  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
 
   /*--- Dimension of the problem --> dependent of the turbulent model ---*/
 
@@ -72,6 +73,10 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
     LinSysSol.Initialize(nPoint, nPointDomain, nVar, 0.0);
     LinSysRes.Initialize(nPoint, nPointDomain, nVar, 0.0);
     System.SetxIsZero(true);
+
+    /*--- Initialization of the Stability Treatment ---*/
+    if (Mmatrix)
+      Diagonal_Sum.Initialize(nPoint, nPointDomain, 1, 0.0);
 
     if (ReducerStrategy)
       EdgeFluxes.Initialize(geometry->GetnEdge(), geometry->GetnEdge(), nVar, nullptr);
