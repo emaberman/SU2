@@ -1830,7 +1830,7 @@ void CConfig::SetConfig_Options() {
   addEnumOption("LINEAR_SOLVER_PREC", Kind_Linear_Solver_Prec, Linear_Solver_Prec_Map, ILU);
   /*!\brief LINEAR_SOLVER_PREC
    *  \n DESCRIPTION: Preconditioner for the Krylov linear solvers \n OPTIONS: see \link Linear_Solver_Prec_Map \endlink \n DEFAULT: LU_SGS \ingroup Config*/
-  addEnumOption("TURB_LINEAR_SOLVER_PREC", Kind_Linear_Solver_Prec_Turb, Linear_Solver_Prec_Map, LU_SGS);
+  addEnumOption("TURB_LINEAR_SOLVER_PREC", Kind_Linear_Solver_Prec_Turb, Linear_Solver_Prec_Map, ILU);
   /* DESCRIPTION: Minimum error threshold for the linear solver for the implicit formulation */
   addDoubleOption("LINEAR_SOLVER_ERROR", Linear_Solver_Error, 1E-6);
   /* DESCRIPTION: Minimum error threshold for the linear solver for the implicit formulation */
@@ -3149,13 +3149,32 @@ void CConfig::SetDefaultFromConfig(CConfig *config){
   }
 }
 
+void CConfig::linkBranchedOptions(){
+  branched_options["TURB_LINEAR_SOLVER"] = "LINEAR_SOLVER";
+  branched_options["TURB_LINEAR_SOLVER_ERROR"] = "LINEAR_SOLVER_ERROR";
+  branched_options["TURB_LINEAR_SOLVER_ITER"] = "LINEAR_SOLVER_ITER";
+  branched_options["TURB_LINEAR_SOLVER_PREC"] = "LINEAR_SOLVER_PREC";
+}
+
+void CConfig::SetLinkedDefault(){
+  linkBranchedOptions();
+  for (const auto& pair : branched_options) {
+      if (!option_map[pair.second]->GetValue().empty()&& option_map[pair.first]->GetValue().empty() ){
+          option_map[pair.first]->SetValue(option_map[pair.second]->GetValue());
+          all_options.erase(pair.first);
+          }
+    }
+}
+  
 void CConfig::SetDefault(){
 
-  /*--- Set the default values for all of the options that weren't set ---*/
+  /* Set defaults value for branched option according to branching if not set in config */
+  SetLinkedDefault();
 
-  for (auto iter = all_options.begin(); iter != all_options.end(); ++iter) {
+  /*--- Set the default values for all of the options that weren't set ---*/
+   for (auto iter = all_options.begin(); iter != all_options.end(); ++iter) {
     if (option_map[iter->first]->GetValue().empty())
-      option_map[iter->first]->SetDefault();
+      option_map[iter->first]->SetDefault();    
   }
 }
 
@@ -7006,7 +7025,37 @@ void CConfig::SetOutput(SU2_COMPONENT val_software, unsigned short val_izone) {
               break;
           }
           cout << "Convergence criteria of the linear solver: "<< Linear_Solver_Error <<"."<< endl;
-          cout << "Max number of linear iterations: "<< Linear_Solver_Iter <<"."<< endl;
+          cout << "Max number of linear iterations for turbulent: "<< Linear_Solver_Iter <<"."<< endl;
+          
+          switch (Kind_Linear_Solver_Turb) {
+            case BCGSTAB:
+            case FGMRES:
+            case RESTARTED_FGMRES:
+              if (Kind_Linear_Solver_Turb == BCGSTAB)
+                cout << "BCGSTAB is used for solving the turbulent scalar linear system." << endl;
+              else
+                cout << "FGMRES is used for solving the turbulent scalar linear system." << endl;
+              switch (Kind_Linear_Solver_Prec_Turb) {
+                case ILU: cout << "Using a ILU("<< Linear_Solver_ILU_n <<") preconditioning."<< endl; break;
+                case LINELET: cout << "Using a linelet preconditioning"; break;
+                case LU_SGS:  cout << "Using a LU-SGS preconditioning"; break;
+                case JACOBI:  cout << "Using a Jacobi preconditioning"; break;
+              }
+              cout << " for the turbulent scalar linear system." << endl;
+              break;
+            case SMOOTHER:
+              switch (Kind_Linear_Solver_Prec_Turb) {
+                case ILU:     cout << "A ILU(" << Linear_Solver_ILU_n << ")"; break;
+                case LINELET: cout << "A Linelet"; break;
+                case LU_SGS:  cout << "A LU-SGS"; break;
+                case JACOBI:  cout << "A Jacobi"; break;
+              }
+              cout << " method is used for smoothing the turbulent scalar linear system." << endl;
+              break;    
+          }
+          cout << "Convergence criteria of the turbulence linear solver: "<< Linear_Solver_Error_Turb <<"."<< endl;
+          cout << "Max number of linear iterations for turbulent scalar: "<< Linear_Solver_Iter_Turb <<"."<< endl;
+          
           break;
         case CLASSICAL_RK4_EXPLICIT:
           cout << "Classical RK4 explicit method for the flow equations." << endl;

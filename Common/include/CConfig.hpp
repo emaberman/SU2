@@ -1251,6 +1251,14 @@ private:
    */
   void SetDefaultFromConfig(CConfig *config);
 
+  /*! \brief link branched options to overide default settings */
+  void linkBranchedOptions();
+
+  /* 
+  brief Set default values for all branched options 
+  */
+  void SetLinkedDefault();
+
   /*!
    * \brief Set default values for all options not yet set.
    */
@@ -1266,7 +1274,11 @@ private:
    class of COptionBase that turns the string into a value) ---*/
 
   map<string, COptionBase*> option_map;
-
+  
+  /*--- brief branched options is a map of optional user defined options to the option which it stemmed out of. 
+  needed for setting the value if not defined by user ---*/
+  
+  map<string, string> branched_options;
 
   // All of the addXxxOptions take in the name of the option, and a reference to the field of that option
   // in the option structure. Depending on the specific type, it may take in a default value, and may
