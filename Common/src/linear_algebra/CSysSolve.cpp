@@ -902,14 +902,22 @@ unsigned long CSysSolve<ScalarType>::Solve(CSysMatrix<ScalarType>& Jacobian, con
       break;
     }
 
+    case LINEAR_SOLVER_MODE::TURBULENCE: {
+     KindSolver   = config->GetKind_Turb_Linear_Solver();
+      KindPrecond  = config->GetKind_Turb_Linear_Solver_Prec();
+      MaxIter      = config->GetTurb_Linear_Solver_Iter();
+      SolverTol    = SU2_TYPE::GetValue(config->GetTurb_Linear_Solver_Error());
+      ScreenOutput = false;
+      break;
+      }
+    
     /*--- Normal mode
-     * assumes that 'lin_sol_mode==LINEAR_SOLVER_MODE::STANDARD', but does not enforce it to avoid compiler warning.
-     * ---*/
+     * assumes that 'lin_sol_mode==LINEAR_SOLVER_MODE::STANDARD', but does not enforce it to avoid compiler warning. ---*/
     default: {
-      KindSolver = config->GetKind_Linear_Solver();
-      KindPrecond = config->GetKind_Linear_Solver_Prec();
-      MaxIter = config->GetLinear_Solver_Iter();
-      SolverTol = SU2_TYPE::GetValue(config->GetLinear_Solver_Error());
+      KindSolver   = config->GetKind_Linear_Solver();
+      KindPrecond  = config->GetKind_Linear_Solver_Prec();
+      MaxIter      = config->GetLinear_Solver_Iter();
+      SolverTol    = SU2_TYPE::GetValue(config->GetLinear_Solver_Error());
       ScreenOutput = false;
       break;
     }

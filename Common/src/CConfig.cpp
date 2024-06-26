@@ -1832,13 +1832,23 @@ void CConfig::SetConfig_Options() {
   /*!\brief LINEAR_SOLVER
    *  \n DESCRIPTION: Linear solver for the implicit, mesh deformation, or discrete adjoint systems \n OPTIONS: see \link Linear_Solver_Map \endlink \n DEFAULT: FGMRES \ingroup Config*/
   addEnumOption("LINEAR_SOLVER", Kind_Linear_Solver, Linear_Solver_Map, FGMRES);
+  /*!\brief LINEAR_SOLVER
+   *  \n DESCRIPTION: Linear solver for the implicit, mesh deformation, or discrete adjoint systems \n OPTIONS: see \link Linear_Solver_Map \endlink \n DEFAULT: FGMRES \ingroup Config*/
+  addEnumOption("TURB_LINEAR_SOLVER", Kind_Linear_Solver_Turb, Linear_Solver_Map, FGMRES);
   /*!\brief LINEAR_SOLVER_PREC
    *  \n DESCRIPTION: Preconditioner for the Krylov linear solvers \n OPTIONS: see \link Linear_Solver_Prec_Map \endlink \n DEFAULT: LU_SGS \ingroup Config*/
   addEnumOption("LINEAR_SOLVER_PREC", Kind_Linear_Solver_Prec, Linear_Solver_Prec_Map, ILU);
+  /*!\brief LINEAR_SOLVER_PREC
+   *  \n DESCRIPTION: Preconditioner for the Krylov linear solvers \n OPTIONS: see \link Linear_Solver_Prec_Map \endlink \n DEFAULT: LU_SGS \ingroup Config*/
+  addEnumOption("TURB_LINEAR_SOLVER_PREC", Kind_Linear_Solver_Prec_Turb, Linear_Solver_Prec_Map, ILU);
   /* DESCRIPTION: Minimum error threshold for the linear solver for the implicit formulation */
   addDoubleOption("LINEAR_SOLVER_ERROR", Linear_Solver_Error, 1E-6);
+  /* DESCRIPTION: Minimum error threshold for the linear solver for the implicit formulation */
+  addDoubleOption("TURB_LINEAR_SOLVER_ERROR", Linear_Solver_Error_Turb, Linear_Solver_Error);
   /* DESCRIPTION: Maximum number of iterations of the linear solver for the implicit formulation */
   addUnsignedLongOption("LINEAR_SOLVER_ITER", Linear_Solver_Iter, 10);
+  /* DESCRIPTION: Maximum number of iterations of the linear solver for the implicit formulation */
+  addUnsignedLongOption("TURB_LINEAR_SOLVER_ITER", Linear_Solver_Iter_Turb, Linear_Solver_Iter);
   /* DESCRIPTION: Fill in level for the ILU preconditioner */
   addUnsignedShortOption("LINEAR_SOLVER_ILU_FILL_IN", Linear_Solver_ILU_n, 0);
   /* DESCRIPTION: Maximum number of iterations of the linear solver for the implicit formulation */
@@ -1978,6 +1988,9 @@ void CConfig::SetConfig_Options() {
   /*!\brief CONV_NUM_METHOD_TURB
    *  \n DESCRIPTION: Convective numerical method \ingroup Config*/
   addConvectOption("CONV_NUM_METHOD_TURB", Kind_ConvNumScheme_Turb, Kind_Centered_Turb, Kind_Upwind_Turb);
+/*!\brief Mmatrix \n DESCRIPTION: Check if the M-matrix should be used for scalar upwind scheme \ingroup Config*/
+  addBoolOption("TURB_M_MATRIX_JAC", MmatrixTurbJac, false);
+  
 
   /*!\brief MUSCL_ADJTURB \n DESCRIPTION: Check if the MUSCL scheme should be used \ingroup Config*/
   addBoolOption("MUSCL_ADJTURB", MUSCL_AdjTurb, false);
