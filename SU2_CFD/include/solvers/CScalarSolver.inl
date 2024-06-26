@@ -546,7 +546,7 @@ void CScalarSolver<VariableType>::CompleteImplicitIteration(CGeometry* geometry,
         for (unsigned short iVar = 0; iVar < nVar; iVar++) {
           nodes->AddClippedSolution(iPoint, iVar, nodes->GetUnderRelaxation(iPoint) * LinSysSol(iPoint, iVar),
                                     lowerlimit[iVar], upperlimit[iVar], density, density_old);
-          }
+        }
       }
       END_SU2_OMP_FOR
     } else {
@@ -555,7 +555,7 @@ void CScalarSolver<VariableType>::CompleteImplicitIteration(CGeometry* geometry,
         for (unsigned short iVar = 0; iVar < nVar; iVar++) {
           nodes->AddClippedSolution(iPoint, iVar, nodes->GetUnderRelaxation(iPoint) * LinSysSol(iPoint, iVar),
                                     lowerlimit[iVar], upperlimit[iVar]);
-          }
+        }
       }
       END_SU2_OMP_FOR
     }
