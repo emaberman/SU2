@@ -98,9 +98,6 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
   const bool Mmatrix = config->GetMmatrixTurbJacobian ();
   
 
-  // // To be later controlled from cfg file
-  // const bool Mmatrix= true;
-
   /*--- Clear residual and system matrix, not needed for
    * reducer strategy as we write over the entire matrix. ---*/
   if (!ReducerStrategy && !Output) {
@@ -163,9 +160,6 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   /*--- Static arrays of MUSCL-reconstructed flow primitives and turbulence variables (thread safety). ---*/
   su2double solution_i[MAXNVAR] = {0.0}, flowPrimVar_i[MAXNVARFLOW] = {0.0};
   su2double solution_j[MAXNVAR] = {0.0}, flowPrimVar_j[MAXNVARFLOW] = {0.0};
-
-  // // To be later controlled from cfg file
-  //       const bool Mmatrix= true;
 
   /*--- For hybrid parallel AD, pause preaccumulation if there is shared reading of
    * variables, otherwise switch to the faster adjoint evaluation mode. ---*/
