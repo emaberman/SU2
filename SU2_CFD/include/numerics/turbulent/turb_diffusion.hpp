@@ -9,9 +9,7 @@
  *
  * The SU2 Project is maintained by the SU2 Foundation
  * (http://su2foundation.org)
- *
- * Copyright 2012-2024, SU2 Contributors (cf. AUTHORS.md)
- *
+ *git 
  * SU2 is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either

@@ -1,3 +1,7 @@
+[submodule "externals/medi"]
+	path = externals/medi
+	url = https://github.com/SciCompKL/MeDiPack
+	ignore = dirty
 [submodule "externals/ninja"]
 	path = externals/ninja
 	url = https://github.com/ninja-build/ninja
@@ -10,9 +14,15 @@
 [submodule "subprojects/CoolProp"]
         path = subprojects/CoolProp
         url = https://github.com/CoolProp/CoolProp.git
+[submodule "externals/opdi"]
+	path = externals/opdi
+	url = https://github.com/SciCompKL/OpDiLib
 [submodule "externals/mel"]
 	path = externals/mel
 	url = https://github.com/pcarruscag/MEL.git
 [submodule "subprojects/MLPCpp"]
 	path = subprojects/MLPCpp
 	url = https://github.com/EvertBunschoten/MLPCpp.git
+[submodule "externals/codi"]
+	path = externals/codi
+	url = https://github.com/scicompkl/CoDiPack
