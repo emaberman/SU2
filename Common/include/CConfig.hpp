@@ -4651,7 +4651,8 @@ public:
    * \brief Get whether to use "Mmatrix Jacobians" for Scalar Upwind scheme.
    * \return yes/no.
    */
-  bool GetMmatrixTurbJacobian (void) const { return MmatrixTurbJac; }
+  bool 
+  GetMmatrixTurbJacobian (void) const { return MmatrixTurbJac; }
 
   /*!
    * \brief Get the kind of integration scheme (explicit or implicit)

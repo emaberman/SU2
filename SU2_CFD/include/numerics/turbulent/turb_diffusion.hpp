@@ -48,6 +48,8 @@ private:
   using Base::Flux;
   using Base::Jacobian_i;
   using Base::Jacobian_j;
+  using Base::ProjTanGrad;
+  using Base::diagCorr;
 
   const su2double sigma = 2.0/3.0;
 
@@ -62,6 +64,8 @@ private:
    */
   void FinishResidualCalc(const CConfig* config) override {
     const bool implicit = config->GetKind_TimeIntScheme() == EULER_IMPLICIT;
+    const bool Mmatrix = config -> GetMmatrixTurbJacobian();
+    // const bool Mmatrix = false;
 
     /*--- Compute mean effective viscosity ---*/
 
@@ -74,8 +78,16 @@ private:
     /*--- For Jacobians -> Use of TSL approx. to compute derivatives of the gradients ---*/
 
     if (implicit) {
-      Jacobian_i[0][0] = (0.5*Proj_Mean_GradScalarVar[0]-nu_e*proj_vector_ij)/sigma;
-      Jacobian_j[0][0] = (0.5*Proj_Mean_GradScalarVar[0]+nu_e*proj_vector_ij)/sigma;
+      /*current default jacobian is not thin shear layer (TSL) approxiamtion, to be fixed later, for now branch: */
+      if (Mmatrix){
+        Jacobian_i[0][0] = (-nu_e*proj_vector_ij)/sigma;
+        Jacobian_j[0][0] = (+nu_e*proj_vector_ij)/sigma;
+        diagCorr[0]= nu_e*ProjTanGrad[0]/sigma;
+      }
+      else {
+        Jacobian_i[0][0] = (0.5*Proj_Mean_GradScalarVar[0]-nu_e*proj_vector_ij)/sigma;
+        Jacobian_j[0][0] = (0.5*Proj_Mean_GradScalarVar[0]+nu_e*proj_vector_ij)/sigma;
+      }
     }
   }
 
@@ -113,6 +125,8 @@ private:
   using Base::Flux;
   using Base::Jacobian_i;
   using Base::Jacobian_j;
+  using Base::ProjTanGrad;
+  using Base::diagCorr;
 
   const su2double sigma = 2.0/3.0;
   const su2double cn1 = 16.0;
@@ -128,7 +142,9 @@ private:
    */
   void FinishResidualCalc(const CConfig* config) override {
     const bool implicit = config->GetKind_TimeIntScheme() == EULER_IMPLICIT;
-
+    const bool Mmatrix = config -> GetMmatrixTurbJacobian();
+    // const bool Mmatrix = false;
+    
     /*--- Compute mean effective viscosity ---*/
 
     const su2double nu_i = Laminar_Viscosity_i/Density_i;
@@ -153,8 +169,16 @@ private:
     /*--- For Jacobians -> Use of TSL approx. to compute derivatives of the gradients ---*/
 
     if (implicit) {
+      /*current default jacobian is not thin layer approxiamtion, to be fixed later, for now branch: */
+      if (Mmatrix){
+        Jacobian_i[0][0] = (-nu_e*proj_vector_ij)/sigma;
+        Jacobian_j[0][0] = (+nu_e*proj_vector_ij)/sigma;
+        diagCorr[0]= nu_e*ProjTanGrad[0]/sigma;
+      }
+      else {
       Jacobian_i[0][0] = (0.5*Proj_Mean_GradScalarVar[0]-nu_e*proj_vector_ij)/sigma;
       Jacobian_j[0][0] = (0.5*Proj_Mean_GradScalarVar[0]+nu_e*proj_vector_ij)/sigma;
+      }
     }
   }
 
@@ -194,6 +218,9 @@ private:
   using Base::Flux;
   using Base::Jacobian_i;
   using Base::Jacobian_j;
+  using Base::ProjTanGrad;
+  using Base::diagCorr;
+
 
   const su2double sigma_k1; /*!< \brief Constants for the viscous terms, k-w (1), k-eps (2)*/
   const su2double sigma_k2;
@@ -215,7 +242,9 @@ private:
    */
   void FinishResidualCalc(const CConfig* config) override {
     const bool implicit = config->GetKind_TimeIntScheme() == EULER_IMPLICIT;
-
+    const bool Mmatrix = config -> GetMmatrixTurbJacobian();
+    // const bool Mmatrix = false;
+    
     /*--- Compute the blended constant for the viscous terms ---*/
     const su2double sigma_kine_i = F1_i*sigma_k1 + (1.0 - F1_i)*sigma_k2;
     const su2double sigma_kine_j = F1_j*sigma_k1 + (1.0 - F1_j)*sigma_k2;
@@ -243,6 +272,11 @@ private:
       const su2double proj_on_rho_j = proj_vector_ij/Density_j;
       Jacobian_j[0][0] = diff_kine*proj_on_rho_j;   Jacobian_j[0][1] = 0.0;
       Jacobian_j[1][0] = 0.0;                       Jacobian_j[1][1] = diff_omega*proj_on_rho_j;
+
+      if (Mmatrix){
+        diagCorr[0]= diff_kine*ProjTanGrad[0];
+        diagCorr[1]= diff_omega*ProjTanGrad[1];
+      }
     }
   }
 

@@ -80,6 +80,7 @@ class CScalarSolver : public CSolver {
 
 /*--- stability modification for M matrix Jacobian Diagonal  ---*/
   CSysVector<su2double> Diagonal_Sum;    /*!< \brief vector to store Diagonal of stability modification of implicit linear system. */
+  CSysVector<su2double> Diagonal_Sum_visc;    /*!< \brief vector to store Diagonal of stability modification of implicit linear system. */
   
   /*!
    * \brief The highest level in the variable hierarchy this solver can safely use.
@@ -106,6 +107,7 @@ class CScalarSolver : public CSolver {
                                          const CGeometry* geometry, CSolver** solver_container, CNumerics* numerics,
                                          const CConfig* config) {
     const bool implicit = (config->GetKind_TimeIntScheme() == EULER_IMPLICIT);
+    const bool Mmatrix = config->GetMmatrixTurbJacobian ();
     CFlowVariable* flowNodes = solver_container[FLOW_SOL] ?
         su2staticcast_p<CFlowVariable*>(solver_container[FLOW_SOL]->GetNodes()) : nullptr;
 
@@ -144,12 +146,20 @@ class CScalarSolver : public CSolver {
     } else {
       LinSysRes.SubtractBlock(iPoint, residual);
       LinSysRes.AddBlock(jPoint, residual);
-      if (implicit) Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+      // if (implicit) Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+      if (implicit){
+        Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+        if (Mmatrix){
+        Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect);
+        Diagonal_Sum_visc.SubtractBlock(jPoint, residual.diagCorrect);
+        }
+      } 
     }
   }
 
   /*!
-   * \brief Generic implementation of the fluid interface boundary condition for scalar solvers.
+
+ * \brief Generic implementation of the fluid interface boundary condition for scalar solvers.  
    * \tparam SolverSpecificNumericsFunc - lambda that implements solver specific contributions to viscous numerics.
    * \note The functor has to implement (iPoint)
    * \param[in] geometry - Geometrical definition of the problem.

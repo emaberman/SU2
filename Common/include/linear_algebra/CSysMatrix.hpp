@@ -820,6 +820,29 @@ class CSysMatrix {
     for (iVar = 0; iVar < nVar; iVar++) matrix[index + iVar * (nVar + 1)] = PassiveAssign(val_matrix);
   }
 
+/*!
+   * \brief Adds positive values from vector block values to the diagonal of the (i, i) subblock
+   *        of the matrix-by-blocks structure.
+   * \param[in] block_i - Diagonal index.
+   * \param[in] val_block - vector Block to add to the diagonal of the matrix.
+   * \param[in] alpha - Scale factor.
+   */
+  
+  template <class OtherType, class T = ScalarType>
+  inline void AddPosVec2Diag(unsigned long block_i, const OtherType& val_block, T alpha = 1.0) {
+    auto index = dia_ptr[block_i] * nVar * nVar;
+    for (auto iVar = 0ul; iVar < nVar; iVar++)
+      matrix[index + iVar * (nVar + 1)] += PassiveAssign(max(alpha * val_block[iVar] ,0.0));
+  }
+
+  template <class OtherType, class T = ScalarType>
+  inline void AddPosVecDivBlock(unsigned long block_i, const OtherType& val_block, const OtherType& alpha ) {
+    auto index = dia_ptr[block_i] * nVar * nVar;
+    for (auto iVar = 0ul; iVar < nVar; iVar++){
+      matrix[index + iVar * (nVar + 1)] += PassiveAssign( max(val_block[iVar]/(alpha[iVar]+1e-20) ,0.0));
+    }
+  }
+
   /*!
    * \brief Deletes the values of the row i of the sparse matrix.
    * \param[in] i - Index of the row.

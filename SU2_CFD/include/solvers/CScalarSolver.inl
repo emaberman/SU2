@@ -95,7 +95,9 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
   const bool muscl = config->GetMUSCL();
   const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
                        (config->GetInnerIter() <= config->GetLimiterIter());
-  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
+  const bool Mmatrix = config -> GetMmatrixTurbJacobian();
+    // const bool Mmatrix = false;
+
   
 
   /*--- Clear residual and system matrix, not needed for
@@ -105,7 +107,8 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
     if (implicit) {
       Jacobian.SetValZero();
       if(Mmatrix){
-        Diagonal_Sum.SetValZero();  
+        Diagonal_Sum.SetValZero();
+        Diagonal_Sum_visc.SetValZero();  
       }
     } else {
       SU2_OMP_BARRIER
@@ -140,7 +143,9 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   const bool muscl = config->GetMUSCL();
   const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
                        (config->GetInnerIter() <= config->GetLimiterIter());
-  const bool Mmatrix = config->GetMmatrixTurbJacobian ();
+  const bool Mmatrix = config -> GetMmatrixTurbJacobian();
+  // const bool Mmatrix = false;
+
 
   /*--- Only reconstruct flow variables if MUSCL is on for flow (requires upwind) and turbulence. ---*/
   const bool musclFlow = config->GetMUSCL_Flow() && muscl && (config->GetKind_ConvNumScheme_Flow() == SPACE_UPWIND);
@@ -294,11 +299,12 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
         if (implicit){
           if (Mmatrix){
             Jacobian.UpdateMMatrixBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
-            Diagonal_Sum.AddBlock(iPoint, *residual.jacobian_i);
-            Diagonal_Sum.AddBlock(iPoint, *residual.jacobian_j);
-            Diagonal_Sum.SubtractBlock(jPoint, *residual.jacobian_i);
-            Diagonal_Sum.SubtractBlock(jPoint, *residual.jacobian_j);
-            
+            // Diagonal_Sum.AddBlock(iPoint, *residual.jacobian_i);
+            // Diagonal_Sum.AddBlock(iPoint, *residual.jacobian_j);
+            // Diagonal_Sum.SubtractBlock(jPoint, *residual.jacobian_i);
+            // Diagonal_Sum.SubtractBlock(jPoint, *residual.jacobian_j);
+            Diagonal_Sum.UpdateMatDiagBlocks(iPoint, jPoint, residual.jacobian_i);
+            Diagonal_Sum.UpdateMatDiagBlocks(iPoint, jPoint, residual.jacobian_j);
             
 
           } else {
@@ -364,7 +370,9 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   if (Mmatrix) {
       SU2_OMP_FOR_STAT(omp_chunk_size)
       for (unsigned long iPoint = 0; iPoint < nPoint; ++iPoint) {
-        Jacobian.AddVal2Diag(iPoint, max(*Diagonal_Sum.GetBlock(iPoint),0.0));
+        // Jacobian.AddVal2Diag(iPoint, max(*Diagonal_Sum.GetBlock(iPoint),0.0));
+        Jacobian.AddPosVec2Diag(iPoint, Diagonal_Sum.GetBlock(iPoint));
+        Jacobian.AddPosVecDivBlock(iPoint, Diagonal_Sum_visc.GetBlock(iPoint), nodes->GetSolution(iPoint));
       }
       END_SU2_OMP_FOR
     }

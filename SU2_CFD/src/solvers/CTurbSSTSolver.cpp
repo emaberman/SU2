@@ -80,7 +80,8 @@ CTurbSSTSolver::CTurbSSTSolver(CGeometry *geometry, CConfig *config, unsigned sh
       EdgeFluxes.Initialize(geometry->GetnEdge(), geometry->GetnEdge(), nVar, nullptr);
     
     if (Mmatrix)
-      Diagonal_Sum.Initialize(nPoint, nPointDomain, 1, 0.0);
+      Diagonal_Sum.Initialize(nPoint, nPointDomain, nVar, 0.0);
+      Diagonal_Sum_visc.Initialize(nPoint, nPointDomain, nVar, 0.0);
     
     /*--- Initialize the BGS residuals in multizone problems. ---*/
     if (multizone){

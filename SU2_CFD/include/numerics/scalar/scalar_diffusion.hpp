@@ -68,8 +68,10 @@ class CAvgGrad_Scalar : public CNumerics {
   su2double* Jacobian_i[MAXNVAR];             /*!< \brief Flux Jacobian w.r.t. node i. */
   su2double* Jacobian_j[MAXNVAR];             /*!< \brief Flux Jacobian w.r.t. node j. */
   su2double JacobianBuffer[2*MAXNVAR*MAXNVAR];/*!< \brief Static storage for the two Jacobians. */
+  su2double diagCorr[MAXNVAR];                /*!< \brief Static storage for a correction vector of the jacobian */
+  su2double ProjTanGrad[MAXNVAR];             /*!< \brief tangent component of Mean_gradScalarVar DOT normal, if required. */
 
-  const bool correct_gradient = false, incompressible = false;
+  const bool correct_gradient = false, incompressible = false, Mmatrix = false;
 
   /*!
    * \brief A pure virtual function; Adds any extra variables to AD
@@ -96,7 +98,8 @@ class CAvgGrad_Scalar : public CNumerics {
     : CNumerics(val_nDim, val_nVar, config),
       idx(val_nDim, config->GetnSpecies()),
       correct_gradient(correct_grad),
-      incompressible(config->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) {
+      incompressible(config->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE),
+      Mmatrix(config -> GetMmatrixTurbJacobian()) {
     if (nVar > MAXNVAR) {
       SU2_MPI::Error("Static arrays are too small.", CURRENT_FUNCTION);
     }
@@ -143,13 +146,15 @@ class CAvgGrad_Scalar : public CNumerics {
 
     su2double ProjGradScalarVarNoCorr[MAXNVAR];
     proj_vector_ij = ComputeProjectedGradient(nDim, nVar, Normal, Coord_i, Coord_j, ScalarVar_Grad_i, ScalarVar_Grad_j,
-                                              correct_gradient, ScalarVar_i, ScalarVar_j, ProjGradScalarVarNoCorr,
+                                              correct_gradient, ScalarVar_i, ScalarVar_j, ProjGradScalarVarNoCorr, ProjTanGrad, 
                                               Proj_Mean_GradScalarVar);
     FinishResidualCalc(config);
 
     AD::SetPreaccOut(Flux, nVar);
     AD::EndPreacc();
-
-    return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
+    
+    if (Mmatrix == true) return ResidualType<>(Flux, Jacobian_i, Jacobian_j, diagCorr);
+    else return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
+    // return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
   }
 };
