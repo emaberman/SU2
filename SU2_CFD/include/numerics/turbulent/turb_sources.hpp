@@ -258,8 +258,8 @@ class CSourceBase_TurbSA : public CNumerics {
       const bool Mmatrix = config -> GetMmatrixTurbJacobian();
       // const bool Mmatrix = false;
       
-      if (Mmatrix) Jacobian_i[0] +=  jac_hat+Prod_hat-Dest_hat; 
-      else Jacobian_i[0] +=  min(jac_hat, 0.0)+min(Prod_hat-Dest_hat,0.0);
+      if (Mmatrix) Jacobian_i[0] += Jacobian_i[0] +=  min(jac_hat, 0.0)+min(Prod_hat-Dest_hat,0.0); 
+      else Jacobian_i[0] += jac_hat+Prod_hat-Dest_hat
 
       if (axisymmetric) ResidualAxisymmetricDiffusion(var.sigma);
       
