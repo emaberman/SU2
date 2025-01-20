@@ -690,8 +690,8 @@ public:
       // if (correct) projCorrected[iVar] -= (edgeProj - (var_j[iVar]-var_i[iVar])) * proj_vector_ij;
       if (correct){
         projTan[iVar] = projNormal[iVar]-edgeProj* proj_vector_ij;
-        projCorrected[iVar] = projTan[iVar]+ (var_j[iVar]-var_i[iVar]) * proj_vector_ij;;
-      } 
+        projCorrected[iVar] = projTan[iVar]+ (var_j[iVar]-var_i[iVar]) * proj_vector_ij;      
+        } 
       else projCorrected[iVar] = projNormal[iVar];
  
     }
