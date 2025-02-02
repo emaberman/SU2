@@ -150,8 +150,8 @@ class CScalarSolver : public CSolver {
       if (implicit){
         Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
         if (Mmatrix){
-        Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect);
-        Diagonal_Sum_visc.SubtractBlock(jPoint, residual.diagCorrect);
+        Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect_i);
+        Diagonal_Sum_visc.AddBlock(jPoint, residual.diagCorrect_j);
         }
       } 
     }

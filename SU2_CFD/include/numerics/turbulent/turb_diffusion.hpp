@@ -49,7 +49,8 @@ private:
   using Base::Jacobian_i;
   using Base::Jacobian_j;
   using Base::ProjTanGrad;
-  using Base::diagCorr;
+  using Base::diagCorr_i;
+  using Base::diagCorr_j;
 
   const su2double sigma = 2.0/3.0;
 
@@ -80,9 +81,11 @@ private:
     if (implicit) {
       /*current default jacobian is not thin shear layer (TSL) approxiamtion, to be fixed later, for now branch: */
       if (Mmatrix){
-        Jacobian_i[0][0] = (-nu_e*proj_vector_ij)/sigma;
-        Jacobian_j[0][0] = (+nu_e*proj_vector_ij)/sigma;
-        diagCorr[0]= nu_e*ProjTanGrad[0]/sigma;
+        Jacobian_i[0][0] = -(nu_e*proj_vector_ij)/sigma;
+        Jacobian_j[0][0] = (nu_e*proj_vector_ij)/sigma;
+        
+        diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-40));
+        diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-40));
       }
       else {
         Jacobian_i[0][0] = (0.5*Proj_Mean_GradScalarVar[0]-nu_e*proj_vector_ij)/sigma;
@@ -126,7 +129,8 @@ private:
   using Base::Jacobian_i;
   using Base::Jacobian_j;
   using Base::ProjTanGrad;
-  using Base::diagCorr;
+  using Base::diagCorr_i;
+  using Base::diagCorr_j;
 
   const su2double sigma = 2.0/3.0;
   const su2double cn1 = 16.0;
@@ -170,10 +174,13 @@ private:
 
     if (implicit) {
       /*current default jacobian is not thin layer approxiamtion, to be fixed later, for now branch: */
+      
       if (Mmatrix){
         Jacobian_i[0][0] = (-nu_e*proj_vector_ij)/sigma;
         Jacobian_j[0][0] = (+nu_e*proj_vector_ij)/sigma;
-        diagCorr[0]= nu_e*ProjTanGrad[0]/sigma;
+       
+        diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-40));
+        diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-40)); 
       }
       else {
       Jacobian_i[0][0] = (0.5*Proj_Mean_GradScalarVar[0]-nu_e*proj_vector_ij)/sigma;
@@ -219,8 +226,8 @@ private:
   using Base::Jacobian_i;
   using Base::Jacobian_j;
   using Base::ProjTanGrad;
-  using Base::diagCorr;
-
+  using Base::diagCorr_i;
+  using Base::diagCorr_j;
 
   const su2double sigma_k1; /*!< \brief Constants for the viscous terms, k-w (1), k-eps (2)*/
   const su2double sigma_k2;
@@ -265,6 +272,25 @@ private:
 
     /*--- For Jacobians -> Use of TSL (Thin Shear Layer) approx. to compute derivatives of the gradients ---*/
     if (implicit) {
+      if (Mmatrix){  
+        const su2double proj_on_rho_j = proj_vector_ij/Density_j;
+        Jacobian_i[0][0] = -diff_kine*proj_on_rho_j;  Jacobian_i[0][1] = 0.0;
+        Jacobian_i[1][0] = 0.0;                       Jacobian_i[1][1] = -diff_omega*proj_on_rho_j;
+
+        Jacobian_j[0][0] = diff_kine*proj_on_rho_j;   Jacobian_j[0][1] = 0.0;
+        Jacobian_j[1][0] = 0.0;                       Jacobian_j[1][1] = diff_omega*proj_on_rho_j;
+
+        /* Compute correction flux including tangent and density corrections due to jacobian modification*/
+        const su2double flux_corr_k = Flux[0]-(Jacobian_i[0][0]*ScalarVar_i[0]+Jacobian_j[0][0]*ScalarVar_j[0]);
+        const su2double flux_corr_omega = Flux[1]-(Jacobian_i[1][1]*ScalarVar_i[1]+Jacobian_j[1][1]*ScalarVar_j[1]);
+
+        diagCorr_i[0]= flux_corr_k/(Density_i*ScalarVar_i[0]);
+        diagCorr_j[0]= -flux_corr_k/(Density_j*ScalarVar_j[0]);
+        diagCorr_i[1]= flux_corr_omega/(Density_i*ScalarVar_i[1]);
+        diagCorr_j[1]= -flux_corr_omega/(Density_j*ScalarVar_j[1]);
+
+      }
+
       const su2double proj_on_rho_i = proj_vector_ij/Density_i;
       Jacobian_i[0][0] = -diff_kine*proj_on_rho_i;  Jacobian_i[0][1] = 0.0;
       Jacobian_i[1][0] = 0.0;                       Jacobian_i[1][1] = -diff_omega*proj_on_rho_i;
@@ -273,10 +299,6 @@ private:
       Jacobian_j[0][0] = diff_kine*proj_on_rho_j;   Jacobian_j[0][1] = 0.0;
       Jacobian_j[1][0] = 0.0;                       Jacobian_j[1][1] = diff_omega*proj_on_rho_j;
 
-      if (Mmatrix){
-        diagCorr[0]= diff_kine*ProjTanGrad[0];
-        diagCorr[1]= diff_omega*ProjTanGrad[1];
-      }
     }
   }
 

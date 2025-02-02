@@ -244,8 +244,13 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
             flowPrimVar_i[iVar] = V_i[iVar] + Project_Grad_i;
             flowPrimVar_j[iVar] = V_j[iVar] + Project_Grad_j;
           }
-
+          
           numerics->SetPrimitive(flowPrimVar_i, flowPrimVar_j);
+
+          // const auto Density_i = flowNodes->GetDensity(iPoint);
+          // const auto Density_j = flowNodes->GetDensity(jPoint);
+          // numerics->SetPointDensity(Density_i, Density_j);
+
         }
 
         if (muscl) {
@@ -372,7 +377,8 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
       for (unsigned long iPoint = 0; iPoint < nPoint; ++iPoint) {
         // Jacobian.AddVal2Diag(iPoint, max(*Diagonal_Sum.GetBlock(iPoint),0.0));
         Jacobian.AddPosVec2Diag(iPoint, Diagonal_Sum.GetBlock(iPoint));
-        Jacobian.AddPosVecDivBlock(iPoint, Diagonal_Sum_visc.GetBlock(iPoint), nodes->GetSolution(iPoint));
+        // Jacobian.AddPosVecDivBlock(iPoint, Diagonal_Sum_visc.GetBlock(iPoint), nodes->GetSolution(iPoint));
+        Jacobian.AddPosVec2Diag(iPoint, Diagonal_Sum_visc.GetBlock(iPoint));
       }
       END_SU2_OMP_FOR
     }

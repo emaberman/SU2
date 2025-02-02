@@ -88,6 +88,8 @@ private:
   using Base::nDim;
   using Base::V_i;
   using Base::V_j;
+  using Base::Density_i;
+  using Base::Density_j;
   using Base::a0;
   using Base::a1;
   using Base::Flux;
