@@ -397,40 +397,6 @@ class CSysVector : public VecExpr::CVecExpr<CSysVector<ScalarType>, ScalarType> 
   }
 
   /*!
-   * \brief Set diaganol of matrix as "block" to the vector.
-   * \note Template param Overwrite can be set to false to update existing values.
-   * \param[in] iPoint - index of the point where set the residual.
-   * \param[in] block - Value to set to the residual.
-   * \param[in] alpha - Scale factor (axpy-type operation).
-   */
-  template <class MatrixType, bool Overwrite = true>
-  FORCEINLINE void SetMatDiag(unsigned long iPoint, const MatrixType& block, ScalarType alpha = 1) {
-    if (Overwrite) {
-      for (auto i = 0ul; i < nVar; ++i) vec_val[iPoint * nVar + i] = alpha * block[i][i];
-    } else {
-      for (auto i = 0ul; i < nVar; ++i) vec_val[iPoint * nVar + i] += alpha * block[i][i];
-    }
-  }
-
-  /*!
-   * \brief Add diaganol of matrix as "block" to the vector, see SetMatDiagBlock.
-   */
-  template <class MatrixType>
-  FORCEINLINE void AddMatDiag(unsigned long iPoint, const MatrixType& block, ScalarType alpha = 1) {
-    SetMatDiag<MatrixType, false>(iPoint, block, alpha);
-  }
-
-  /*!
-   * \brief Add to iPoint, subtract from jPoint.
-   */
-  template <class MatrixType>
-  FORCEINLINE void UpdateMatDiagBlocks(unsigned long iPoint, unsigned long jPoint, const MatrixType& block,
-                                ScalarType alpha = 1) {
-    AddMatDiag(iPoint, block, alpha);
-    AddMatDiag(jPoint, block, -alpha);
-  }
-
-  /*!
    * \brief Vectorized version of SetBlock, sets multiple iPoint's.
    * \param[in] iPoint - SIMD integer, the positions to update.
    * \param[in] vector - Vector of SIMD scalars.

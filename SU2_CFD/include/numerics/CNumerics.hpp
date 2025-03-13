@@ -203,16 +203,15 @@ public:
     const Vector_t residual;
     const Matrix_t jacobian_i;
     const Matrix_t jacobian_j;
-    const Vector_t diagCorrect_i; 
-    const Vector_t diagCorrect_j; 
+    const Vector_t diagCorrect; 
     
     ResidualType() = delete;
 
     ResidualType(const Vector_t& res, const Matrix_t& jac_i, const Matrix_t& jac_j) :
-      residual(res), jacobian_i(jac_i), jacobian_j(jac_j), diagCorrect_i(nullptr), diagCorrect_j(nullptr) { }
+      residual(res), jacobian_i(jac_i), jacobian_j(jac_j), diagCorrect(nullptr) { }
 
-    ResidualType(const Vector_t& res, const Matrix_t& jac_i, const Matrix_t& jac_j, const Vector_t& d_cor_i, const Vector_t& d_cor_j) :
-      residual(res), jacobian_i(jac_i), jacobian_j(jac_j), diagCorrect_i(d_cor_i) , diagCorrect_j(d_cor_j) { }
+    ResidualType(const Vector_t& res, const Matrix_t& jac_i, const Matrix_t& jac_j, const Vector_t& d_cor) :
+      residual(res), jacobian_i(jac_i), jacobian_j(jac_j), diagCorrect(d_cor)  { }
 
     /*!
      * \brief The object can be directly cast to the vector type, this
@@ -687,8 +686,6 @@ public:
         if (correct) edgeProj += meanGrad * edgeVec[iDim];
       }
 
-      // projCorrected[iVar] = projNormal[iVar];
-      // if (correct) projCorrected[iVar] -= (edgeProj - (var_j[iVar]-var_i[iVar])) * proj_vector_ij;
       if (correct){
         projTan[iVar] = projNormal[iVar]-edgeProj* proj_vector_ij;
         projCorrected[iVar] = projTan[iVar]+ (var_j[iVar]-var_i[iVar]) * proj_vector_ij;      
@@ -849,17 +846,6 @@ public:
     roughness_i = val_roughness_i;
     roughness_j = val_roughness_j;
   }
-
-  // /*!
-  //  * \brief Set the value of the density for the incompressible solver.
-  //  * \param[in] val_densityinc_i - Value of the pressure at point i.
-  //  * \param[in] val_densityinc_j - Value of the pressure at point j.
-  //  */
-  // void SetPointDensity(su2double val_density_i, su2double val_density_j) {
-  //   Density_i = val_density_i;
-  //   Density_j = val_density_j;
-  // }
-
 
   /*!
    * \brief Set coordinates of the points.

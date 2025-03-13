@@ -146,12 +146,11 @@ class CScalarSolver : public CSolver {
     } else {
       LinSysRes.SubtractBlock(iPoint, residual);
       LinSysRes.AddBlock(jPoint, residual);
-      // if (implicit) Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
       if (implicit){
         Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
         if (Mmatrix){
-        Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect_i);
-        Diagonal_Sum_visc.AddBlock(jPoint, residual.diagCorrect_j);
+          Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect, -1);
+          Diagonal_Sum_visc.AddBlock(jPoint, residual.diagCorrect, 1);
         }
       } 
     }

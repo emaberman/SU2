@@ -596,8 +596,8 @@ class CSysMatrix {
       for (jVar = 0; jVar < nEqn; jVar++) {
         bii[offset] -= PassiveAssign(block_j[iVar][jVar] * scale);
         bij[offset] += PassiveAssign(block_j[iVar][jVar] * scale);
-        bji[offset] -= PassiveAssign(block_i[iVar][jVar] * scale);
-        bjj[offset] += PassiveAssign(block_i[iVar][jVar] * scale);
+        bji[offset] -= PassiveAssign(block_i[iVar][jVar] * scale);;
+        bjj[offset] += PassiveAssign(block_i[iVar][jVar] * scale);;
         ++offset;
       }
     }
@@ -827,19 +827,11 @@ class CSysMatrix {
    * \param[in] val_block - vector Block to add to the diagonal of the matrix.
    * \param[in] alpha - Scale factor.
    */
-  
   template <class OtherType, class T = ScalarType>
   inline void AddPosVec2Diag(unsigned long block_i, const OtherType& val_block, T alpha = 1.0) {
     auto index = dia_ptr[block_i] * nVar * nVar;
-    for (auto iVar = 0ul; iVar < nVar; iVar++)
-      matrix[index + iVar * (nVar + 1)] += PassiveAssign(max(alpha * val_block[iVar] ,0.0));
-  }
-
-  template <class OtherType, class T = ScalarType>
-  inline void AddPosVecDivBlock(unsigned long block_i, const OtherType& val_block, const OtherType& alpha ) {
-    auto index = dia_ptr[block_i] * nVar * nVar;
-    for (auto iVar = 0ul; iVar < nVar; iVar++){
-      matrix[index + iVar * (nVar + 1)] += PassiveAssign( max(val_block[iVar]/(alpha[iVar]+1e-20) ,0.0));
+    for (auto iVar = 0ul; iVar < nVar; iVar++) {
+      matrix[index + iVar * (nVar + 1)] += PassiveAssign(std::max(alpha * val_block[iVar], 0.0));
     }
   }
 

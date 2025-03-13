@@ -244,13 +244,8 @@ class CSourceBase_TurbSA : public CNumerics {
       }
 
       /*--- Compute production, destruction and cross production and jacobian ---*/
-    //   su2double Production = 0.0, Destruction = 0.0, CrossProduction = 0.0;
-    //   SourceTerms::get(ScalarVar_i[0], var, Production, Destruction, CrossProduction, Jacobian_i[0]);
-
-    //   Residual = (Production - Destruction + CrossProduction) * Volume;
-
-      su2double Prod_hat = 0.0, Dest_hat = 0.0, CrossProduction = 0.0, jac_hat=0.0;
-      SourceTerms::get(ScalarVar_i[0], var, Prod_hat, Dest_hat, CrossProduction, jac_hat);
+      su2double Prod_hat = 0.0, Dest_hat = 0.0, CrossProduction = 0.0, jac_hat=0.0, cross_hat=0.0; 
+      SourceTerms::get(ScalarVar_i[0], var, Prod_hat, Dest_hat, CrossProduction, jac_hat, cross_hat);
 
       Residual = ((Prod_hat - Dest_hat)*ScalarVar_i[0] + CrossProduction) * Volume;
       
@@ -258,9 +253,9 @@ class CSourceBase_TurbSA : public CNumerics {
       const bool Mmatrix = config -> GetMmatrixTurbJacobian();
       // const bool Mmatrix = false;
       
-      if (Mmatrix) Jacobian_i[0] +=  min(jac_hat, 0.0)+min(Prod_hat-Dest_hat,0.0); 
+      if (Mmatrix) Jacobian_i[0] +=  min(jac_hat, 0.0) + min(Prod_hat-Dest_hat,0.0) + min(cross_hat,0.0); 
       else Jacobian_i[0] += jac_hat+Prod_hat-Dest_hat;
-
+    
       if (axisymmetric) ResidualAxisymmetricDiffusion(var.sigma);
       
       Jacobian_i[0] *= Volume;
@@ -444,80 +439,12 @@ struct Edw {
  * \param[out] cross_production: CrossProduction term.
  * \param[out] jacobian: Derivative of the combined source term wrt nue.
  */
-// struct SourceTerms {
-
-// /*! \brief Baseline (Original SA model). */
-// struct Bsl {
-//   static void get(const su2double& nue, const CSAVariables& var, su2double& production, su2double& destruction,
-//                   su2double& cross_production, su2double& jacobian) {
-//     ComputeProduction(nue, var, production, jacobian);
-//     ComputeDestruction(nue, var, destruction, jacobian);
-//     ComputeCrossProduction(nue, var, cross_production, jacobian);
-//   }
-
-//   static void ComputeProduction(const su2double& nue, const CSAVariables& var, su2double& production,
-//                                 su2double& jacobian) {
-//     const su2double factor = var.intermittency * var.cb1;
-//     production = factor * (1.0 - var.ft2) * var.Prod * nue;
-//     jacobian += factor * (-var.Prod * nue * var.d_ft2 + (1.0 - var.ft2) * (nue * var.d_Shat + var.Prod));
-//   }
-
-//   static void ComputeDestruction(const su2double& nue, const CSAVariables& var, su2double& destruction,
-//                                  su2double& jacobian) {
-//     const su2double cb1_k2 = var.cb1 / var.k2;
-//     const su2double factor = var.cw1 * var.fw - cb1_k2 * var.ft2;
-//     destruction = var.interDestrFactor * factor * pow(nue, 2) / var.dist_i_2;
-//     jacobian -= var.interDestrFactor * ((var.cw1 * var.d_fw - cb1_k2 * var.d_ft2) * pow(nue, 2) + factor * 2 * nue) / var.dist_i_2;
-//   }
-
-//   static void ComputeCrossProduction(const su2double& nue, const CSAVariables& var, su2double& cross_production,
-//                                      su2double&) {
-//     cross_production = var.cb2_sigma * var.norm2_Grad;
-//     /*--- No contribution to the jacobian. ---*/
-//   }
-// };
-
-// /*! \brief Negative. */
-// struct Neg {
-//   static void get(const su2double& nue, const CSAVariables& var, su2double& production, su2double& destruction,
-//                   su2double& cross_production, su2double& jacobian) {
-//     if (nue > 0.0) {
-//       Bsl::get(nue, var, production, destruction, cross_production, jacobian);
-//     } else {
-//       ComputeProduction(nue, var, production, jacobian);
-//       ComputeDestruction(nue, var, destruction, jacobian);
-//       ComputeCrossProduction(nue, var, cross_production, jacobian);
-//     }
-//   }
-
-//   static void ComputeProduction(const su2double& nue, const CSAVariables& var, su2double& production,
-//                                 su2double& jacobian) {
-//     const su2double dP_dnu = var.intermittency * var.cb1 * (1.0 - var.ct3) * var.Prod;
-//     production = dP_dnu * nue;
-//     jacobian += dP_dnu;
-//   }
-
-//   static void ComputeDestruction(const su2double& nue, const CSAVariables& var, su2double& destruction,
-//                                  su2double& jacobian) {
-//     /*--- The destruction when nue < 0 is added instead of the usual subtraction, hence the negative sign. ---*/
-//     const su2double dD_dnu = -var.cw1 * nue / var.dist_i_2;
-//     destruction = dD_dnu * nue * var.interDestrFactor;
-//     jacobian -= 2 * dD_dnu * var.interDestrFactor;
-//   }
-
-//   static void ComputeCrossProduction(const su2double& nue, const CSAVariables& var, su2double& cross_production,
-//                                      su2double& jacobian) {
-//     Bsl::ComputeCrossProduction(nue, var, cross_production, jacobian);
-//   }
-// };
-// };
-
 struct SourceTerms {
 
 /*! \brief Baseline (Original SA model). */
 struct Bsl {
   static void get(const su2double& nue, const CSAVariables& var, su2double& Prod_hat, su2double& dest_hat,
-                  su2double& cross_production, su2double& jac_hat) {
+                  su2double& cross_production, su2double& jac_hat, su2double& cross_hat) {
     ComputeProduction(nue, var, Prod_hat, jac_hat);
     ComputeDestruction(nue, var, dest_hat, jac_hat);
     ComputeCrossProduction(nue, var, cross_production, jac_hat);
@@ -539,22 +466,23 @@ struct Bsl {
   }
 
   static void ComputeCrossProduction(const su2double& nue, const CSAVariables& var, su2double& cross_production,
-                                     su2double&) {
+                                     su2double& cross_hat) {
     cross_production = var.cb2_sigma * var.norm2_Grad;
     /*--- No contribution to the jac_hat. ---*/
+    cross_hat -= cross_production/(abs(nue)+1e-100);
   }
 };
 
 /*! \brief Negative. */
 struct Neg {
   static void get(const su2double& nue, const CSAVariables& var, su2double& Prod_hat, su2double& dest_hat,
-                  su2double& cross_production, su2double& jac_hat) {
+                  su2double& cross_production, su2double& jac_hat, su2double& cross_hat) {
     if (nue > 0.0) {
-      Bsl::get(nue, var, Prod_hat, dest_hat, cross_production, jac_hat);
+      Bsl::get(nue, var, Prod_hat, dest_hat, cross_production, jac_hat, cross_hat);
     } else {
       ComputeProduction(nue, var, Prod_hat, jac_hat);
       ComputeDestruction(nue, var, dest_hat, jac_hat);
-      ComputeCrossProduction(nue, var, cross_production, jac_hat);
+      ComputeCrossProduction(nue, var, cross_production, cross_hat);
     }
   }
 
@@ -562,7 +490,6 @@ struct Neg {
                                 su2double& jac_hat) {
     const su2double dP_dnu = var.intermittency * var.cb1 * (1.0 - var.ct3) * var.Prod;
     Prod_hat = dP_dnu ;
-    jac_hat += dP_dnu;
   }
 
   static void ComputeDestruction(const su2double& nue, const CSAVariables& var, su2double& dest_hat,
@@ -570,12 +497,12 @@ struct Neg {
     /*--- The dest_hat when nue < 0 is added instead of the usual subtraction, hence the negative sign. ---*/
     const su2double dD_dnu = -var.cw1 * nue / var.dist_i_2;
     dest_hat = dD_dnu * var.interDestrFactor;
-    jac_hat -= 2 * dD_dnu * var.interDestrFactor;
+    jac_hat -= dest_hat;
   }
 
   static void ComputeCrossProduction(const su2double& nue, const CSAVariables& var, su2double& cross_production,
-                                     su2double& jac_hat) {
-    Bsl::ComputeCrossProduction(nue, var, cross_production, jac_hat);
+                                     su2double& cross_hat) {
+    Bsl::ComputeCrossProduction(nue, var, cross_production, cross_hat);
   }
 };
 };
@@ -1012,7 +939,6 @@ class CSourcePieceWise_TurbSST final : public CNumerics {
       /*--- Implicit part ---*/
       
     const bool Mmatrix = config -> GetMmatrixTurbJacobian();
-    // const bool Mmatrix = false;
 
       
       if (Mmatrix){
@@ -1028,13 +954,13 @@ class CSourcePieceWise_TurbSST final : public CNumerics {
         Jacobian_i[0][1] = 0.0;
         Jacobian_i[1][0] = 0.0;
         Jacobian_i[1][1] = (iw1 + iw2) * Volume;
-      }
+        }
 
       else{
-      Jacobian_i[0][0] = -beta_star * ScalarVar_i[1] * Volume * (1.0 + zetaFMt);
-      Jacobian_i[0][1] = -beta_star * ScalarVar_i[0] * Volume * (1.0 + zetaFMt);
-      Jacobian_i[1][0] = 0.0;
-      Jacobian_i[1][1] = -2.0 * beta_blended * ScalarVar_i[1] * Volume * (1.0 - 0.09/beta_blended * zetaFMt);
+        Jacobian_i[0][0] = -beta_star * ScalarVar_i[1] * Volume * (1.0 + zetaFMt);
+        Jacobian_i[0][1] = -beta_star * ScalarVar_i[0] * Volume * (1.0 + zetaFMt);
+        Jacobian_i[1][0] = 0.0;
+        Jacobian_i[1][1] = -2.0 * beta_blended * ScalarVar_i[1] * Volume * (1.0 - 0.09/beta_blended * zetaFMt);
       }
     }
 

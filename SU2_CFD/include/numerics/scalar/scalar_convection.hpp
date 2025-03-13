@@ -56,8 +56,10 @@ class CUpwScalar : public CNumerics {
   su2double* Jacobian_i[MAXNVAR];   /*!< \brief Flux Jacobian w.r.t. node i. */
   su2double* Jacobian_j[MAXNVAR];   /*!< \brief Flux Jacobian w.r.t. node j. */
   su2double JacobianBuffer[2*MAXNVAR*MAXNVAR];  /*!< \brief Static storage for the two Jacobians. */
+  su2double diagCorr[MAXNVAR];                /*!< \brief Static storage for a correction vector of the jacobian */
+  
 
-  const bool incompressible = false, dynamic_grid = false;
+  const bool incompressible = false, dynamic_grid = false, Mmatrix = false;
 
   /*!
    * \brief A pure virtual function. Derived classes must use it to register the additional
@@ -83,7 +85,8 @@ class CUpwScalar : public CNumerics {
     : CNumerics(ndim, nvar, config),
       idx(ndim, config->GetnSpecies()),
       incompressible(config->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE),
-      dynamic_grid(config->GetDynamic_Grid()) {
+      dynamic_grid(config->GetDynamic_Grid()),
+      Mmatrix(config -> GetMmatrixTurbJacobian())  {
     if (nVar > MAXNVAR) {
       SU2_MPI::Error("Static arrays are too small.", CURRENT_FUNCTION);
     }
@@ -145,6 +148,7 @@ class CUpwScalar : public CNumerics {
     AD::SetPreaccOut(Flux, nVar);
     AD::EndPreacc();
 
-    return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
+    if (Mmatrix == true) return ResidualType<>(Flux, Jacobian_i, Jacobian_j, diagCorr);
+    else return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
   }
 };
