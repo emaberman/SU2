@@ -1998,8 +1998,8 @@ void CConfig::SetConfig_Options() {
   /*!\brief CONV_NUM_METHOD_TURB
    *  \n DESCRIPTION: Convective numerical method \ingroup Config*/
   addConvectOption("CONV_NUM_METHOD_TURB", Kind_ConvNumScheme_Turb, Kind_Centered_Turb, Kind_Upwind_Turb);
-/*!\brief Mmatrix \n DESCRIPTION: Check if the M-matrix should be used for scalar upwind scheme \ingroup Config*/
-  addBoolOption("MMATRIX_TURB_JAC", MmatrixTurbJac, false);
+/*!\brief UPC \n DESCRIPTION: Check if the Uconditionally positive convergent (UPC) method should be used for scalar jacobian \ingroup Config*/
+  addBoolOption("UPC_TURB", UPC_TurbJac, false);
   
 
   /*!\brief MUSCL_ADJTURB \n DESCRIPTION: Check if the MUSCL scheme should be used \ingroup Config*/

@@ -71,7 +71,7 @@ class CAvgGrad_Scalar : public CNumerics {
   su2double diagCorr[MAXNVAR];                /*!< \brief Static storage for a correction vector of the jacobian */
   su2double ProjTanGrad[MAXNVAR];             /*!< \brief tangent component of Mean_gradScalarVar DOT normal, if required. */
 
-  const bool correct_gradient = false, incompressible = false, Mmatrix = false;
+  const bool correct_gradient = false, incompressible = false, upc = false;
 
   /*!
    * \brief A pure virtual function; Adds any extra variables to AD
@@ -99,7 +99,7 @@ class CAvgGrad_Scalar : public CNumerics {
       idx(val_nDim, config->GetnSpecies()),
       correct_gradient(correct_grad),
       incompressible(config->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE),
-      Mmatrix(config -> GetMmatrixTurbJacobian()) {
+      upc(config -> GetUPC_TurbJacobian()) {
     if (nVar > MAXNVAR) {
       SU2_MPI::Error("Static arrays are too small.", CURRENT_FUNCTION);
     }
@@ -153,7 +153,7 @@ class CAvgGrad_Scalar : public CNumerics {
     AD::SetPreaccOut(Flux, nVar);
     AD::EndPreacc();
     
-    if (Mmatrix == true) return ResidualType<>(Flux, Jacobian_i, Jacobian_j, diagCorr);
+    if (upc == true) return ResidualType<>(Flux, Jacobian_i, Jacobian_j, diagCorr);
     else return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
   }
 };

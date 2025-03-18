@@ -96,7 +96,7 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry* geometry, const
   const bool muscl = config->GetMUSCL();
   const bool limiter =
       (config->GetKind_SlopeLimit() != LIMITER::NONE) && (config->GetInnerIter() <= config->GetLimiterIter());
-  const bool Mmatrix = config->GetMmatrixTurbJacobian();
+  const bool upc = config->GetUPC_TurbJacobian();
 
   /*--- Clear residual and system matrix, not needed for
    * reducer strategy as we write over the entire matrix. ---*/
@@ -104,7 +104,7 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry* geometry, const
     LinSysRes.SetValZero();
     if (implicit) {
       Jacobian.SetValZero();
-      if (Mmatrix) {
+      if (upc) {
         Diagonal_Sum.SetValZero();
         Diagonal_Sum_visc.SetValZero();
       }
@@ -151,7 +151,7 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
   const bool muscl = config->GetMUSCL();
   const bool limiter =
       (config->GetKind_SlopeLimit() != LIMITER::NONE) && (config->GetInnerIter() <= config->GetLimiterIter());
-  const bool Mmatrix = config->GetMmatrixTurbJacobian();
+  const bool upc = config->GetUPC_TurbJacobian();
 
   /*--- Only reconstruct flow variables if MUSCL is on for flow (requires upwind) and turbulence. ---*/
   const bool musclFlow = config->GetMUSCL_Flow() && muscl && (config->GetKind_ConvNumScheme_Flow() == SPACE_UPWIND);
@@ -302,8 +302,8 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
         LinSysRes.SubtractBlock(jPoint, residual);
 
         if (implicit) {
-          if (Mmatrix) {
-            Jacobian.UpdateMMatrixBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+          if (upc) {
+            Jacobian.UpdateUPCBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
             Diagonal_Sum.UpdateBlocks(iPoint, jPoint, residual.diagCorrect);
 
           } else {
@@ -366,7 +366,7 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
     }
   }
 
-  if (Mmatrix) {
+  if (upc) {
     SU2_OMP_FOR_STAT(omp_chunk_size)
     for (unsigned long iPoint = 0; iPoint < nPoint; ++iPoint) {
         Jacobian.AddPosVec2Diag(iPoint, Diagonal_Sum.GetBlock(iPoint));

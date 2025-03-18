@@ -250,10 +250,10 @@ class CSourceBase_TurbSA : public CNumerics {
       Residual = ((Prod_hat - Dest_hat)*ScalarVar_i[0] + CrossProduction) * Volume;
       
       /* Implicit part */
-      const bool Mmatrix = config -> GetMmatrixTurbJacobian();
-      // const bool Mmatrix = false;
+      const bool upc = config -> GetUPC_TurbJacobian();
+      // const bool upc = false;
       
-      if (Mmatrix) Jacobian_i[0] +=  min(jac_hat, 0.0) + min(Prod_hat-Dest_hat,0.0) + min(cross_hat,0.0); 
+      if (upc) Jacobian_i[0] +=  min(jac_hat, 0.0) + min(Prod_hat-Dest_hat,0.0) + min(cross_hat,0.0); 
       else Jacobian_i[0] += jac_hat+Prod_hat-Dest_hat;
     
       if (axisymmetric) ResidualAxisymmetricDiffusion(var.sigma);
@@ -938,10 +938,10 @@ class CSourcePieceWise_TurbSST final : public CNumerics {
 
       /*--- Implicit part ---*/
       
-    const bool Mmatrix = config -> GetMmatrixTurbJacobian();
+    const bool upc = config -> GetUPC_TurbJacobian();
 
       
-      if (Mmatrix){
+      if (upc){
         su2double rok = Density_i * ScalarVar_i[0];
         su2double ik1   = -max(dk - pk,0.0) / rok;
         su2double ik2   = -max(pk,0.) / rok;

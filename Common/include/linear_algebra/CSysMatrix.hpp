@@ -583,7 +583,7 @@ class CSysMatrix {
    * \param[in] scale - Scale blocks during update (axpy type op).
    */
   template <class MatrixType, class OtherType = ScalarType>
-  inline void UpdateMMatrixBlocks(unsigned long iEdge, unsigned long iPoint, unsigned long jPoint, const MatrixType& block_i,
+  inline void UpdateUPCBlocks(unsigned long iEdge, unsigned long iPoint, unsigned long jPoint, const MatrixType& block_i,
                            const MatrixType& block_j, OtherType scale = 1) {
     ScalarType* bii = &matrix[dia_ptr[iPoint] * nVar * nEqn];
     ScalarType* bjj = &matrix[dia_ptr[jPoint] * nVar * nEqn];

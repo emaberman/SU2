@@ -107,7 +107,7 @@ class CScalarSolver : public CSolver {
                                          const CGeometry* geometry, CSolver** solver_container, CNumerics* numerics,
                                          const CConfig* config) {
     const bool implicit = (config->GetKind_TimeIntScheme() == EULER_IMPLICIT);
-    const bool Mmatrix = config->GetMmatrixTurbJacobian ();
+    const bool upc = config->GetUPC_TurbJacobian ();
     CFlowVariable* flowNodes = solver_container[FLOW_SOL] ?
         su2staticcast_p<CFlowVariable*>(solver_container[FLOW_SOL]->GetNodes()) : nullptr;
 
@@ -148,7 +148,7 @@ class CScalarSolver : public CSolver {
       LinSysRes.AddBlock(jPoint, residual);
       if (implicit){
         Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
-        if (Mmatrix){
+        if (upc){
           Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect, -1);
           Diagonal_Sum_visc.AddBlock(jPoint, residual.diagCorrect, 1);
         }
