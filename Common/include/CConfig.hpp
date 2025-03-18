@@ -4077,7 +4077,7 @@ public:
   DIFFUSIVITYMODEL GetKind_Diffusivity_Model(void) const { return Kind_Diffusivity_Model; }
 
   /*!
-   * \brief Get the value of the scheme used for diffusion calculation 
+   * \brief Get the value of the scheme used for diffusion calculation
    * \return Diffusion model scheme
    */
   DIFFUSION_SCHEME GetKind_DiffusionScheme() const { return kind_DiffusionScheme; }
