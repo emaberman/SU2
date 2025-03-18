@@ -652,22 +652,64 @@ public:
    * \return (Edge_Vector DOT normal) / |Edge_Vector|^2.
    */
   template<class Vec1, class Vec2, class Mat>
+  // FORCEINLINE static su2double ComputeProjectedGradient(int nDim, int nVar, const Vec1& normal,
+  //                                                       const Vec1& coord_i, const Vec1& coord_j,
+  //                                                       const Mat& grad_i, const Mat& grad_j,
+  //                                                       bool correct,
+  //                                                       const Vec2& var_i, const Vec2& var_j,
+  //                                                       su2double* projCorrected) {
+  //   assert(nDim == 2 || nDim == 3);
+  //   nDim = (nDim > 2)? 3 : 2;
+  //   su2double edgeVec[MAXNDIM],projNormal[MAXNDIM], dist_ij_2 = 0.0, proj_vector_ij = 0.0;
+
+  //   for (int iDim = 0; iDim < nDim; iDim++) {
+  //     edgeVec[iDim] = coord_j[iDim] - coord_i[iDim];
+  //     dist_ij_2 += pow(edgeVec[iDim], 2); 
+  //     proj_vector_ij += edgeVec[iDim] * normal[iDim];
+  //   }
+  //   proj_vector_ij /= max(dist_ij_2,EPS);
+
+  //   /*--- Mean gradient approximation. ---*/
+  //   for (int iVar = 0; iVar < nVar; iVar++) {
+  //     projNormal[iVar] = 0.0;
+  //     su2double edgeProj = 0.0;
+
+  //     for (int iDim = 0; iDim < nDim; iDim++) {
+  //       su2double meanGrad = 0.5 * (grad_i[iVar][iDim] + grad_j[iVar][iDim]);
+  //       projNormal[iVar] += meanGrad * normal[iDim];
+  //       if (correct) edgeProj += meanGrad * edgeVec[iDim];
+  //     }
+
+  //     projCorrected[iVar] = projNormal[iVar];
+  //     if (correct) projCorrected[iVar] -= (edgeProj - (var_j[iVar]-var_i[iVar])) * proj_vector_ij;
+  //   }
+
+  //   return proj_vector_ij;
+  // }
+
   FORCEINLINE static su2double ComputeProjectedGradient(int nDim, int nVar, const Vec1& normal,
                                                         const Vec1& coord_i, const Vec1& coord_j,
                                                         const Mat& grad_i, const Mat& grad_j,
                                                         bool correct,
                                                         const Vec2& var_i, const Vec2& var_j,
-                                                        su2double* projNormal,
-                                                        su2double* projCorrected) {
+                                                        su2double* projCorrected, const CConfig* config) {
     assert(nDim == 2 || nDim == 3);
     nDim = (nDim > 2)? 3 : 2;
-    su2double edgeVec[MAXNDIM], dist_ij_2 = 0.0, proj_vector_ij = 0.0;
+    su2double edgeVec[MAXNDIM],projNormal[MAXNDIM], dist_ij_2 = 0.0, proj_vector_ij = 0.0, alpha=1.0;
 
     for (int iDim = 0; iDim < nDim; iDim++) {
       edgeVec[iDim] = coord_j[iDim] - coord_i[iDim];
-      dist_ij_2 += pow(edgeVec[iDim], 2);
-      proj_vector_ij += edgeVec[iDim] * normal[iDim];
+      
+      if (config->GetKind_DiffusionScheme()==DIFFUSION_SCHEME::HB_2012){
+        dist_ij_2 += pow(edgeVec[iDim], 2);
+        proj_vector_ij += edgeVec[iDim] * normal[iDim];
+      } 
+      else if (config->GetKind_DiffusionScheme() == DIFFUSION_SCHEME::DM_1995) {
+        dist_ij_2 += edgeVec[iDim]*normal[iDim];  
+        proj_vector_ij += normal[iDim] * normal[iDim];
+      }
     }
+
     proj_vector_ij /= max(dist_ij_2,EPS);
 
     /*--- Mean gradient approximation. ---*/
@@ -687,6 +729,7 @@ public:
 
     return proj_vector_ij;
   }
+
 
   /*!
    * \brief Set the value of the first blending function.

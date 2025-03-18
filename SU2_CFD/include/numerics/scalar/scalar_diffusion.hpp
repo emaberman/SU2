@@ -141,10 +141,9 @@ class CAvgGrad_Scalar : public CNumerics {
 
     ExtraADPreaccIn();
 
-    su2double ProjGradScalarVarNoCorr[MAXNVAR];
     proj_vector_ij = ComputeProjectedGradient(nDim, nVar, Normal, Coord_i, Coord_j, ScalarVar_Grad_i, ScalarVar_Grad_j,
-                                              correct_gradient, ScalarVar_i, ScalarVar_j, ProjGradScalarVarNoCorr,
-                                              Proj_Mean_GradScalarVar);
+                                              correct_gradient, ScalarVar_i, ScalarVar_j,
+                                              Proj_Mean_GradScalarVar, config);
     FinishResidualCalc(config);
 
     AD::SetPreaccOut(Flux, nVar);
