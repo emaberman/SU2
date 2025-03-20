@@ -56,7 +56,8 @@ class CUpwScalar : public CNumerics {
   su2double* Jacobian_i[MAXNVAR];   /*!< \brief Flux Jacobian w.r.t. node i. */
   su2double* Jacobian_j[MAXNVAR];   /*!< \brief Flux Jacobian w.r.t. node j. */
   su2double JacobianBuffer[2*MAXNVAR*MAXNVAR];  /*!< \brief Static storage for the two Jacobians. */
-  su2double diagCorr[MAXNVAR];                /*!< \brief Static storage for a correction vector of the jacobian */
+  su2double diagCorr_i[MAXNVAR];                /*!< \brief Static storage for a correction vector of the jacobian */
+  su2double diagCorr_j[MAXNVAR];                /*!< \brief Static storage for a correction vector of the jacobian */
   
 
   const bool incompressible = false, dynamic_grid = false, upc = false;
@@ -148,7 +149,7 @@ class CUpwScalar : public CNumerics {
     AD::SetPreaccOut(Flux, nVar);
     AD::EndPreacc();
 
-    if (upc == true) return ResidualType<>(Flux, Jacobian_i, Jacobian_j, diagCorr);
+    if (upc == true) return ResidualType<>(Flux, Jacobian_i, Jacobian_j, diagCorr_i, diagCorr_j);
     else return ResidualType<>(Flux, Jacobian_i, Jacobian_j);
   }
 };

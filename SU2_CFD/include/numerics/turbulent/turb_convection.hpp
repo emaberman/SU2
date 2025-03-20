@@ -48,7 +48,8 @@ private:
   using Base::ScalarVar_i;
   using Base::ScalarVar_j;
   using Base::bounded_scalar;
-  using Base::diagCorr;
+  using Base::diagCorr_i;
+  using Base::diagCorr_j;
 
   /*!
    * \brief Adds any extra variables to AD.
@@ -66,7 +67,9 @@ private:
     Jacobian_j[0][0] = a1;
   
     if (upc){ 
-      diagCorr[0]= (a0+a1)*(Flux[0]!=0);
+      diagCorr_i[0]= a0*(Flux[0]!=0);
+      diagCorr_j[0]= a1*(Flux[0]!=0); 
+
     }
   }
 
@@ -105,7 +108,8 @@ private:
   using Base::ScalarVar_j;
   using Base::idx;
   using Base::bounded_scalar;
-  using Base::diagCorr;
+  using Base::diagCorr_i;
+  using Base::diagCorr_j;
 
   /*!
    * \brief Adds any extra variables to AD
@@ -129,8 +133,11 @@ private:
     Jacobian_j[1][0] = 0.0;   Jacobian_j[1][1] = a1;
 
     if (upc){ 
-      diagCorr[0]= (a0+a1)*(Flux[0]!=0);
-      diagCorr[1]= (a0+a1)*(Flux[1]!=0);
+      diagCorr_i[0]= a0*(Flux[0]!=0);
+      diagCorr_j[0]= a1*(Flux[0]!=0);
+      diagCorr_i[1]= a0*(Flux[1]!=0);
+      diagCorr_j[1]= a1*(Flux[1]!=0);
+    
     }
   }
 

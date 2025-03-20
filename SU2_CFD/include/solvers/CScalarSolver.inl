@@ -304,7 +304,8 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
         if (implicit) {
           if (upc) {
             Jacobian.UpdateUPCBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
-            Diagonal_Sum.UpdateBlocks(iPoint, jPoint, residual.diagCorrect);
+            Diagonal_Sum.UpdateBlocks(iPoint, jPoint, residual.diagCorrect_i);
+            Diagonal_Sum.UpdateBlocks(iPoint, jPoint, residual.diagCorrect_j);
 
           } else {
             Jacobian.UpdateBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
