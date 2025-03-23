@@ -84,7 +84,7 @@ private:
       if (upc){
         Jacobian_i[0][0] = -(nu_e*proj_vector_ij)/sigma;
         Jacobian_j[0][0] = (nu_e*proj_vector_ij)/sigma;
-        
+
         diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-100));
         diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100));
 
@@ -181,7 +181,7 @@ private:
         Jacobian_j[0][0] = (+nu_e*proj_vector_ij)/sigma;
        
         diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-100*(ScalarVar_i[0]==0)));
-        diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100*(ScalarVar_i[0]==0))); 
+        diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100*(ScalarVar_j[0]==0))); 
       
       }
       else {
