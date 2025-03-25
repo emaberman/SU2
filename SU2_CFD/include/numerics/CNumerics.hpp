@@ -662,13 +662,9 @@ public:
                                                         const Mat& grad_i, const Mat& grad_j,
                                                         bool correct,
                                                         const Vec2& var_i, const Vec2& var_j,
-<<<<<<< HEAD
-                                                        su2double* projNormal,
                                                         su2double* projTan,
-                                                        su2double* projCorrected) {
-=======
-                                                        su2double* projCorrected, const CConfig* config) {
->>>>>>> Diffusion
+                                                        su2double* projCorrected,
+                                                        const CConfig* config) {
     assert(nDim == 2 || nDim == 3);
     nDim = (nDim > 2)? 3 : 2;
     su2double edgeVec[MAXNDIM],projNormal[MAXNDIM], dist_ij_2 = 0.0, proj_vector_ij = 0.0, alpha=1.0;
