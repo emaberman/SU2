@@ -662,18 +662,30 @@ public:
                                                         const Mat& grad_i, const Mat& grad_j,
                                                         bool correct,
                                                         const Vec2& var_i, const Vec2& var_j,
+<<<<<<< HEAD
                                                         su2double* projNormal,
                                                         su2double* projTan,
                                                         su2double* projCorrected) {
+=======
+                                                        su2double* projCorrected, const CConfig* config) {
+>>>>>>> Diffusion
     assert(nDim == 2 || nDim == 3);
     nDim = (nDim > 2)? 3 : 2;
-    su2double edgeVec[MAXNDIM], dist_ij_2 = 0.0, proj_vector_ij = 0.0;
+    su2double edgeVec[MAXNDIM],projNormal[MAXNDIM], dist_ij_2 = 0.0, proj_vector_ij = 0.0, alpha=1.0;
 
     for (int iDim = 0; iDim < nDim; iDim++) {
       edgeVec[iDim] = coord_j[iDim] - coord_i[iDim];
-      dist_ij_2 += pow(edgeVec[iDim], 2);
-      proj_vector_ij += edgeVec[iDim] * normal[iDim];
+      
+      if (config->GetKind_DiffusionScheme()==DIFFUSION_SCHEME::HB_2012){
+        dist_ij_2 += pow(edgeVec[iDim], 2);
+        proj_vector_ij += edgeVec[iDim] * normal[iDim];
+      } 
+      else if (config->GetKind_DiffusionScheme() == DIFFUSION_SCHEME::DM_1995) {
+        dist_ij_2 += edgeVec[iDim]*normal[iDim];  
+        proj_vector_ij += normal[iDim] * normal[iDim];
+      }
     }
+
     proj_vector_ij /= max(dist_ij_2,EPS);
 
     /*--- Mean gradient approximation. ---*/
@@ -697,6 +709,7 @@ public:
 
     return proj_vector_ij;
   }
+
 
   /*!
    * \brief Set the value of the first blending function.

@@ -502,6 +502,7 @@ private:
   CONDUCTIVITYMODEL Kind_ConductivityModel; /*!< \brief Kind of the Thermal Conductivity Model */
   CONDUCTIVITYMODEL_TURB Kind_ConductivityModel_Turb; /*!< \brief Kind of the Turbulent Thermal Conductivity Model */
   DIFFUSIVITYMODEL Kind_Diffusivity_Model; /*!< \brief Kind of the mass diffusivity Model */
+  DIFFUSION_SCHEME kind_DiffusionScheme;    /*!< \brief Kind of the scheme used for diffusion calculation. */
   FREESTREAM_OPTION Kind_FreeStreamOption; /*!< \brief Kind of free stream option to choose if initializing with density or temperature  */
   MAIN_SOLVER Kind_Solver;         /*!< \brief Kind of solver: Euler, NS, Continuous adjoint, etc.  */
   LIMITER Kind_SlopeLimit,    /*!< \brief Global slope limiter. */
@@ -4075,6 +4076,12 @@ public:
    * \return Mass diffusivity model.
    */
   DIFFUSIVITYMODEL GetKind_Diffusivity_Model(void) const { return Kind_Diffusivity_Model; }
+
+  /*!
+   * \brief Get the value of the scheme used for diffusion calculation
+   * \return Diffusion model scheme
+   */
+  DIFFUSION_SCHEME GetKind_DiffusionScheme() const { return kind_DiffusionScheme; }
 
   /*!
    * \brief Get the value of the constant viscosity.

@@ -878,6 +878,18 @@ static const MapType<std::string, UPWIND> Upwind_Map = {
 };
 
 /*!
+ * \brief Types of discretizations for solving Diffusion problems
+ */
+enum class DIFFUSION_SCHEME {
+  DM_1995,           /*!< \brief Method of DemirdiiC & Muzaferija (1995) for computing diffusion. */
+  HB_2012,            /*!< \brief Method of Haselbacher & Blazek (2012) for computing diffusion. */
+};
+static const MapType<std::string, DIFFUSION_SCHEME> DiffusionScheme_Map = {
+  MakePair("DM_1995", DIFFUSION_SCHEME::DM_1995)
+  MakePair("HB_2012", DIFFUSION_SCHEME::HB_2012)
+  };
+
+/*!
  * \brief Types of FEM spatial discretizations
  */
 enum ENUM_FEM {
