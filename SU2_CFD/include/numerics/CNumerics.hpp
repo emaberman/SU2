@@ -203,11 +203,16 @@ public:
     const Vector_t residual;
     const Matrix_t jacobian_i;
     const Matrix_t jacobian_j;
-
+    const Vector_t diagCorrect_i; 
+    const Vector_t diagCorrect_j; 
+    
     ResidualType() = delete;
 
     ResidualType(const Vector_t& res, const Matrix_t& jac_i, const Matrix_t& jac_j) :
-      residual(res), jacobian_i(jac_i), jacobian_j(jac_j) { }
+      residual(res), jacobian_i(jac_i), jacobian_j(jac_j), diagCorrect_i(nullptr), diagCorrect_j(nullptr) { }
+
+    ResidualType(const Vector_t& res, const Matrix_t& jac_i, const Matrix_t& jac_j, const Vector_t& d_cor_i, const Vector_t& d_cor_j) :
+      residual(res), jacobian_i(jac_i), jacobian_j(jac_j), diagCorrect_i(d_cor_i) , diagCorrect_j(d_cor_j) { }
 
     /*!
      * \brief The object can be directly cast to the vector type, this
@@ -658,6 +663,7 @@ public:
                                                         bool correct,
                                                         const Vec2& var_i, const Vec2& var_j,
                                                         su2double* projNormal,
+                                                        su2double* projTan,
                                                         su2double* projCorrected) {
     assert(nDim == 2 || nDim == 3);
     nDim = (nDim > 2)? 3 : 2;
@@ -681,8 +687,12 @@ public:
         if (correct) edgeProj += meanGrad * edgeVec[iDim];
       }
 
-      projCorrected[iVar] = projNormal[iVar];
-      if (correct) projCorrected[iVar] -= (edgeProj - (var_j[iVar]-var_i[iVar])) * proj_vector_ij;
+      if (correct){
+        projTan[iVar] = projNormal[iVar]-edgeProj* proj_vector_ij;
+        projCorrected[iVar] = projTan[iVar]+ (var_j[iVar]-var_i[iVar]) * proj_vector_ij;      
+        } 
+      else projCorrected[iVar] = projNormal[iVar];
+ 
     }
 
     return proj_vector_ij;

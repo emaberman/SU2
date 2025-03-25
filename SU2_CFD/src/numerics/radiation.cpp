@@ -86,11 +86,11 @@ void CAvgGradCorrected_P1::ComputeResidual(su2double *val_residual, su2double **
   AD::SetPreaccIn(RadVar_i,nVar); AD::SetPreaccIn(RadVar_j,nVar);
   AD::SetPreaccIn(RadVar_Grad_i,nVar,nDim); AD::SetPreaccIn(RadVar_Grad_j,nVar,nDim);
 
-  su2double NormalGrad[nVar], CorrectedGrad[nVar];
+  su2double NormalGrad[nVar], CorrectedGrad[nVar], GradCorrection[nVar];
 
   auto proj_vector_ij = ComputeProjectedGradient(nDim, nVar, Normal, Coord_i, Coord_j, RadVar_Grad_i,
                                                  RadVar_Grad_j, true, RadVar_i, RadVar_j,
-                                                 NormalGrad, CorrectedGrad);
+                                                 NormalGrad, GradCorrection, CorrectedGrad);
 
   val_residual[0] = GammaP1*CorrectedGrad[0];
 

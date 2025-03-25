@@ -38,6 +38,7 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
   su2double Density_Inf, Viscosity_Inf, Factor_nu_Inf, Factor_nu_Engine, Factor_nu_ActDisk;
 
   bool multizone = config->GetMultizone_Problem();
+  const bool upc = config->GetUPC_TurbJacobian ();
 
   /*--- Dimension of the problem --> dependent of the turbulent model ---*/
 
@@ -72,6 +73,12 @@ CTurbSASolver::CTurbSASolver(CGeometry *geometry, CConfig *config, unsigned shor
     LinSysSol.Initialize(nPoint, nPointDomain, nVar, 0.0);
     LinSysRes.Initialize(nPoint, nPointDomain, nVar, 0.0);
     System.SetxIsZero(true);
+
+    /*--- Initialization of the Stability Treatment ---*/
+    if (upc){
+      Diagonal_Sum.Initialize(nPoint, nPointDomain, nVar, 0.0);
+      Diagonal_Sum_visc.Initialize(nPoint, nPointDomain, nVar, 0.0);
+    }
 
     if (ReducerStrategy)
       EdgeFluxes.Initialize(geometry->GetnEdge(), geometry->GetnEdge(), nVar, nullptr);
@@ -1315,7 +1322,10 @@ void CTurbSASolver::SetTurbVars_WF(CGeometry *geometry, CSolver **solver_contain
         su2double func_prim = 4.0 * pow(nu_til_old,3) - 3.0*(Eddy_Visc/Density_Normal)*pow(nu_til_old,2);
 
         // damped Newton method
-        nu_til = nu_til_old - relax*(func/func_prim);
+        const su2double fp = relax * max(func/func_prim,0.0);
+        const su2double fm = relax * min(func/func_prim, 0.0);  
+        nu_til = (nu_til_old - fm) / (1 + fp/nu_til_old);
+        // nu_til = nu_til_old - relax*(func/func_prim);
 
         diff = fabs(nu_til-nu_til_old);
         nu_til_old = nu_til;

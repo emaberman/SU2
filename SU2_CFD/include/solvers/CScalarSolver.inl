@@ -31,9 +31,10 @@
 
 template <class VariableType>
 CScalarSolver<VariableType>::CScalarSolver(CGeometry* geometry, CConfig* config, bool conservative)
-    : CSolver(), Conservative(conservative),
-      prim_idx(config->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE,
-               config->GetNEMOProblem(), geometry->GetnDim(), config->GetnSpecies()) {
+    : CSolver(),
+      Conservative(conservative),
+      prim_idx(config->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE, config->GetNEMOProblem(), geometry->GetnDim(),
+               config->GetnSpecies()) {
   nMarker = config->GetnMarker_All();
 
   /*--- Store the number of vertices on each marker for deallocation later ---*/
@@ -50,7 +51,7 @@ CScalarSolver<VariableType>::CScalarSolver(CGeometry* geometry, CConfig* config,
   /*--- For the discrete adjoint, the reducer strategy is costly. Prefer coloring, possibly with reduced edge color
    *    group size. Find the maximum edge color group size that yields an efficient coloring. Also, allow larger numbers
    *    of colors. ---*/
-  const bool relax =  config->GetEdgeColoringRelaxDiscAdj();
+  const bool relax = config->GetEdgeColoringRelaxDiscAdj();
   const auto& coloring = geometry->GetEdgeColoring(&parallelEff, relax);
 #else
   const auto& coloring = geometry->GetEdgeColoring(&parallelEff);
@@ -88,13 +89,14 @@ CScalarSolver<VariableType>::~CScalarSolver() {
 }
 
 template <class VariableType>
-void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const CConfig *config, const bool Output) {
+void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry* geometry, const CConfig* config, const bool Output) {
   /*--- Define booleans that are solver specific through CConfig's GlobalParams which have to be set in CFluidIteration
    * before calling these solver functions. ---*/
   const bool implicit = (config->GetKind_TimeIntScheme() == EULER_IMPLICIT);
   const bool muscl = config->GetMUSCL();
-  const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
-                       (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool limiter =
+      (config->GetKind_SlopeLimit() != LIMITER::NONE) && (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool upc = config->GetUPC_TurbJacobian();
 
   /*--- Clear residual and system matrix, not needed for
    * reducer strategy as we write over the entire matrix. ---*/
@@ -102,6 +104,10 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
     LinSysRes.SetValZero();
     if (implicit) {
       Jacobian.SetValZero();
+      if (upc) {
+        Diagonal_Sum.SetValZero();
+        Diagonal_Sum_visc.SetValZero();
+      }
     } else {
       SU2_OMP_BARRIER
     }
@@ -110,16 +116,26 @@ void CScalarSolver<VariableType>::CommonPreprocessing(CGeometry *geometry, const
   /*--- Upwind second order reconstruction and gradients ---*/
 
   if (config->GetReconstructionGradientRequired()) {
-    switch(config->GetKind_Gradient_Method_Recon()) {
-      case GREEN_GAUSS: SetSolution_Gradient_GG(geometry, config, -1, true); break;
-      case LEAST_SQUARES: SetSolution_Gradient_LS(geometry, config, -1, true); break;
-      case WEIGHTED_LEAST_SQUARES: SetSolution_Gradient_LS(geometry, config, -1, true); break;
+    switch (config->GetKind_Gradient_Method_Recon()) {
+      case GREEN_GAUSS:
+        SetSolution_Gradient_GG(geometry, config, -1, true);
+        break;
+      case LEAST_SQUARES:
+        SetSolution_Gradient_LS(geometry, config, -1, true);
+        break;
+      case WEIGHTED_LEAST_SQUARES:
+        SetSolution_Gradient_LS(geometry, config, -1, true);
+        break;
     }
   }
 
-  switch(config->GetKind_Gradient_Method()) {
-    case GREEN_GAUSS: SetSolution_Gradient_GG(geometry, config, -1); break;
-    case WEIGHTED_LEAST_SQUARES: SetSolution_Gradient_LS(geometry, config, -1); break;
+  switch (config->GetKind_Gradient_Method()) {
+    case GREEN_GAUSS:
+      SetSolution_Gradient_GG(geometry, config, -1);
+      break;
+    case WEIGHTED_LEAST_SQUARES:
+      SetSolution_Gradient_LS(geometry, config, -1);
+      break;
   }
 
   if (limiter && muscl) SetSolution_Limiter(geometry, config);
@@ -133,14 +149,15 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
    * before calling these solver functions. ---*/
   const bool implicit = (config->GetKind_TimeIntScheme() == EULER_IMPLICIT);
   const bool muscl = config->GetMUSCL();
-  const bool limiter = (config->GetKind_SlopeLimit() != LIMITER::NONE) &&
-                       (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool limiter =
+      (config->GetKind_SlopeLimit() != LIMITER::NONE) && (config->GetInnerIter() <= config->GetLimiterIter());
+  const bool upc = config->GetUPC_TurbJacobian();
 
   /*--- Only reconstruct flow variables if MUSCL is on for flow (requires upwind) and turbulence. ---*/
   const bool musclFlow = config->GetMUSCL_Flow() && muscl && (config->GetKind_ConvNumScheme_Flow() == SPACE_UPWIND);
   /*--- Only consider flow limiters for cell-based limiters, edge-based would need to be recomputed. ---*/
-  const bool limiterFlow =
-      (config->GetKind_SlopeLimit_Flow() != LIMITER::NONE) && (config->GetKind_SlopeLimit_Flow() != LIMITER::VAN_ALBADA_EDGE);
+  const bool limiterFlow = (config->GetKind_SlopeLimit_Flow() != LIMITER::NONE) &&
+                           (config->GetKind_SlopeLimit_Flow() != LIMITER::VAN_ALBADA_EDGE);
 
   auto* flowNodes = su2staticcast_p<CFlowVariable*>(solver_container[FLOW_SOL]->GetNodes());
   const auto& edgeMassFluxes = *(solver_container[FLOW_SOL]->GetEdgeMassFluxes());
@@ -283,7 +300,19 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
       } else {
         LinSysRes.AddBlock(iPoint, residual);
         LinSysRes.SubtractBlock(jPoint, residual);
-        if (implicit) Jacobian.UpdateBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+
+        if (implicit) {
+          if (upc) {
+            Jacobian.UpdateUPCBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+            Diagonal_Sum.UpdateBlocks(iPoint, jPoint, residual.diagCorrect_i);
+            Diagonal_Sum.UpdateBlocks(iPoint, jPoint, residual.diagCorrect_j);
+
+          } else {
+            Jacobian.UpdateBlocks(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
+            }
+        } 
+      
+      
       }
 
       /*--- Apply convective flux correction to negate the effects of flow divergence in case of incompressible flow.
@@ -325,7 +354,7 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
         su2double divergence = 0;
 
         for (auto iEdge : geometry->nodes->GetEdges(iPoint)) {
-          const auto sign = (iPoint == geometry->edges->GetNode(iEdge,0)) ? 1 : -1;
+          const auto sign = (iPoint == geometry->edges->GetNode(iEdge, 0)) ? 1 : -1;
           const su2double EdgeMassFlux = sign * edgeMassFluxes[iEdge];
           divergence += EdgeMassFlux;
           LinSysRes.AddBlock(iPoint, solution, -EdgeMassFlux);
@@ -336,6 +365,15 @@ void CScalarSolver<VariableType>::Upwind_Residual(CGeometry* geometry, CSolver**
       }
       END_SU2_OMP_FOR
     }
+  }
+
+  if (upc) {
+    SU2_OMP_FOR_STAT(omp_chunk_size)
+    for (unsigned long iPoint = 0; iPoint < nPoint; ++iPoint) {
+        Jacobian.AddPosVec2Diag(iPoint, Diagonal_Sum.GetBlock(iPoint));
+        Jacobian.AddPosVec2Diag(iPoint, Diagonal_Sum_visc.GetBlock(iPoint));
+    }
+    END_SU2_OMP_FOR
   }
 }
 
@@ -408,8 +446,7 @@ void CScalarSolver<VariableType>::BC_Far_Field(CGeometry* geometry, CSolver** so
       /*--- Set Normal (it is necessary to change the sign) ---*/
 
       su2double Normal[MAXNDIM] = {0.0};
-      for (auto iDim = 0u; iDim < nDim; iDim++)
-        Normal[iDim] = -geometry->vertex[val_marker][iVertex]->GetNormal(iDim);
+      for (auto iDim = 0u; iDim < nDim; iDim++) Normal[iDim] = -geometry->vertex[val_marker][iVertex]->GetNormal(iDim);
       conv_numerics->SetNormal(Normal);
 
       if (conv_numerics->GetBoundedScalar()) {
@@ -432,7 +469,7 @@ void CScalarSolver<VariableType>::BC_Far_Field(CGeometry* geometry, CSolver** so
 }
 
 template <class VariableType>
-void CScalarSolver<VariableType>::SetTime_Step(CGeometry *geometry, CSolver **solver_container, CConfig *config,
+void CScalarSolver<VariableType>::SetTime_Step(CGeometry* geometry, CSolver** solver_container, CConfig* config,
                                                unsigned short iMesh, unsigned long Iteration) {
   const auto flowNodes = solver_container[FLOW_SOL]->GetNodes();
 

@@ -986,8 +986,18 @@ void CNSSolver::SetTau_Wall_WF(CGeometry *geometry, CSolver **solver_container, 
                   pow(VelTangMod * kappa / U_Tau, 2) + VelTangMod * kappa / U_Tau) / U_Tau;
 
         /* --- Newton Step --- */
+        
+        if(grad_diff > abs(1e-20)){
+          const su2double fp = relax * max(diff / grad_diff,0.);
+          const su2double fm = relax * min(diff / grad_diff, 0.);  
+          U_Tau = (U_Tau - fm) / (1 + fp/U_Tau);
+        }
+       /* positive solution*/
+        else U_Tau = U_Tau - relax *diff;
+        
+        U_Tau = max(U_Tau, 1e-20);
 
-        U_Tau = U_Tau - relax*(diff / grad_diff);
+        // U_Tau = U_Tau - relax*(diff / grad_diff);
 
         counter++;
         if (counter > max_iter) {

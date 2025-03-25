@@ -40,7 +40,8 @@ CTurbSSTSolver::CTurbSSTSolver(CGeometry *geometry, CConfig *config, unsigned sh
 
   bool multizone = config->GetMultizone_Problem();
   sstParsedOptions = config->GetSSTParsedOptions();
-
+  const bool upc = config->GetUPC_TurbJacobian ();
+  
   /*--- Dimension of the problem --> dependent on the turbulence model. ---*/
 
   nVar = 2;
@@ -77,6 +78,11 @@ CTurbSSTSolver::CTurbSSTSolver(CGeometry *geometry, CConfig *config, unsigned sh
 
     if (ReducerStrategy)
       EdgeFluxes.Initialize(geometry->GetnEdge(), geometry->GetnEdge(), nVar, nullptr);
+    
+    if (upc){
+      Diagonal_Sum.Initialize(nPoint, nPointDomain, nVar, 0.0);
+      Diagonal_Sum_visc.Initialize(nPoint, nPointDomain, nVar, 0.0);
+    }
 
     /*--- Initialize the BGS residuals in multizone problems. ---*/
     if (multizone){
