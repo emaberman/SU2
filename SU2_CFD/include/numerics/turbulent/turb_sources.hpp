@@ -947,13 +947,11 @@ class CSourcePieceWise_TurbSST final : public CNumerics {
         su2double ik2   = -max(pk,0.) / rok;
         
         su2double row = Density_i * ScalarVar_i[1];
-        su2double iw1   = -max(dw - pw,0.0) / row;
-        su2double iw2   = -max(pw + dw,0.)/ row;
-
+        
         Jacobian_i[0][0] = (ik1 + ik2) * Volume;
         Jacobian_i[0][1] = 0.0;
         Jacobian_i[1][0] = 0.0;
-        Jacobian_i[1][1] = (iw1 + iw2) * Volume;
+        Jacobian_i[1][1] = -2* dw/row * Volume;
         }
 
       else{

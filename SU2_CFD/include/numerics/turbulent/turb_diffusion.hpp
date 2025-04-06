@@ -273,14 +273,15 @@ private:
 
     /*--- For Jacobians -> Use of TSL (Thin Shear Layer) approx. to compute derivatives of the gradients ---*/
     if (implicit) {
-      if (upc){  
-        const su2double proj_on_rho_j = proj_vector_ij/Density_j;
-        Jacobian_i[0][0] = -diff_kine*proj_on_rho_j;  Jacobian_i[0][1] = 0.0;
-        Jacobian_i[1][0] = 0.0;                       Jacobian_i[1][1] = -diff_omega*proj_on_rho_j;
+      const su2double proj_on_rho_i = proj_vector_ij/Density_i;
+        Jacobian_i[0][0] = -diff_kine*proj_on_rho_i;  Jacobian_i[0][1] = 0.0;
+        Jacobian_i[1][0] = 0.0;                       Jacobian_i[1][1] = -diff_omega*proj_on_rho_i;
 
+        const su2double proj_on_rho_j = proj_vector_ij/Density_j;
         Jacobian_j[0][0] = diff_kine*proj_on_rho_j;   Jacobian_j[0][1] = 0.0;
         Jacobian_j[1][0] = 0.0;                       Jacobian_j[1][1] = diff_omega*proj_on_rho_j;
 
+      if (upc){  
         /* Compute correction flux including tangent and density corrections due to jacobian modification*/
         const su2double flux_corr_k = Flux[0]-(Jacobian_i[0][0]*Density_i*ScalarVar_i[0]+Jacobian_j[0][0]*Density_j*ScalarVar_j[0]);
         const su2double flux_corr_omega = Flux[1]-(Jacobian_i[1][1]*Density_i*ScalarVar_i[1]+Jacobian_j[1][1]*Density_j*ScalarVar_j[1]);
@@ -291,16 +292,6 @@ private:
         diagCorr_j[1]= -flux_corr_omega/(Density_j*ScalarVar_j[1]);
 
 
-      }
-
-      else {
-        const su2double proj_on_rho_i = proj_vector_ij/Density_i;
-        Jacobian_i[0][0] = -diff_kine*proj_on_rho_i;  Jacobian_i[0][1] = 0.0;
-        Jacobian_i[1][0] = 0.0;                       Jacobian_i[1][1] = -diff_omega*proj_on_rho_i;
-
-        const su2double proj_on_rho_j = proj_vector_ij/Density_j;
-        Jacobian_j[0][0] = diff_kine*proj_on_rho_j;   Jacobian_j[0][1] = 0.0;
-        Jacobian_j[1][0] = 0.0;                       Jacobian_j[1][1] = diff_omega*proj_on_rho_j;
       }
     }
   }
