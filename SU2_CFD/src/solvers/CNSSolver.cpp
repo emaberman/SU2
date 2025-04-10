@@ -950,6 +950,14 @@ void CNSSolver::SetTau_Wall_WF(CGeometry *geometry, CSolver **solver_container, 
             SU2_OMP_CRITICAL
             {
               cout << "Warning: T_Wall < 0 " << endl;
+              cout << "Beta " << Beta << endl;
+              cout << "Gam " << Gam << endl;
+              cout << "U_Plus " << U_Plus << endl;
+              
+              cout << "1.0 + Beta*U_Plus " << 1.0 + Beta*U_Plus << endl;
+              cout << "- Gam*U_Plus*U_Plus " << - Gam*U_Plus*U_Plus << endl;
+              
+              // std::cin.get();
             }
             END_SU2_OMP_CRITICAL
           }
@@ -1003,9 +1011,9 @@ void CNSSolver::SetTau_Wall_WF(CGeometry *geometry, CSolver **solver_container, 
         if (counter > max_iter) {
           notConvergedCounter++;
           // use some safe values for convergence
-          Y_Plus = 30.0;
-          Eddy_Visc_Wall = 1.0;
-          U_Tau = 1.0;
+          // Y_Plus = 30.0;
+          // Eddy_Visc_Wall = 1.0;
+          // U_Tau = 1.0;
           break;
         }
       }

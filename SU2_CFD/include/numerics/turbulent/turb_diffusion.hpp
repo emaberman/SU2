@@ -174,12 +174,14 @@ private:
     /*--- For Jacobians -> Use of TSL approx. to compute derivatives of the gradients ---*/
 
     if (implicit) {
-      /*current default jacobian is not thin layer approxiamtion, to be fixed later, for now branch: */
+      
       
       if (upc){
+        /*current default jacobian is not thin layer approxiamtion, maybe this should be fixed regardless of UPC option: */
         Jacobian_i[0][0] = (-nu_e*proj_vector_ij)/sigma;
         Jacobian_j[0][0] = (+nu_e*proj_vector_ij)/sigma;
        
+        /*Add correction to ensure UPC method */
         diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-100*(ScalarVar_i[0]==0)));
         diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100*(ScalarVar_j[0]==0))); 
       
