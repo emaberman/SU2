@@ -150,7 +150,7 @@ class CScalarSolver : public CSolver {
         Jacobian.UpdateBlocksSub(iEdge, iPoint, jPoint, residual.jacobian_i, residual.jacobian_j);
         if (upc){
           Diagonal_Sum_visc.AddBlock(iPoint, residual.diagCorrect_i, -1);
-          Diagonal_Sum_visc.AddBlock(jPoint, residual.diagCorrect_j, -1);
+          Diagonal_Sum_visc.AddBlock(jPoint, residual.diagCorrect_j, 1);
         }
       } 
     }

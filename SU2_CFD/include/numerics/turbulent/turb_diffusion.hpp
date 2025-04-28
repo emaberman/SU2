@@ -86,7 +86,7 @@ private:
         Jacobian_j[0][0] = (nu_e*proj_vector_ij)/sigma;
 
         diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-100));
-        diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100));
+        diagCorr_j[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100));
 
         }
       else {
@@ -183,7 +183,7 @@ private:
        
         /*Add correction to ensure UPC method */
         diagCorr_i[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_i[0]+1e-100*(ScalarVar_i[0]==0)));
-        diagCorr_j[0]= -nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100*(ScalarVar_j[0]==0))); 
+        diagCorr_j[0]= nu_e*ProjTanGrad[0]/(sigma*(ScalarVar_j[0]+1e-100*(ScalarVar_j[0]==0))); 
       
       }
       else {
@@ -285,13 +285,14 @@ private:
 
       if (upc){  
         /* Compute correction flux including tangent and density corrections due to jacobian modification*/
-        const su2double flux_corr_k = Flux[0]-(Jacobian_i[0][0]*Density_i*ScalarVar_i[0]+Jacobian_j[0][0]*Density_j*ScalarVar_j[0]);
-        const su2double flux_corr_omega = Flux[1]-(Jacobian_i[1][1]*Density_i*ScalarVar_i[1]+Jacobian_j[1][1]*Density_j*ScalarVar_j[1]);
+        const su2double flux_corr_k = Flux[0]-(-Jacobian_i[0][0]*Density_i*ScalarVar_i[0]+Jacobian_j[0][0]*Density_j*ScalarVar_j[0]);
+        const su2double flux_corr_omega = Flux[1]-(-Jacobian_i[1][1]*Density_i*ScalarVar_i[1]+Jacobian_j[1][1]*Density_j*ScalarVar_j[1]);
 
         diagCorr_i[0]= flux_corr_k/(Density_i*ScalarVar_i[0]);
-        diagCorr_j[0]= -flux_corr_k/(Density_j*ScalarVar_j[0]);
+        diagCorr_j[0]= flux_corr_k/(Density_j*ScalarVar_j[0]);
         diagCorr_i[1]= flux_corr_omega/(Density_i*ScalarVar_i[1]);
-        diagCorr_j[1]= -flux_corr_omega/(Density_j*ScalarVar_j[1]);
+        diagCorr_j[1]= flux_corr_omega/(Density_j*ScalarVar_j[1]);
+
 
 
       }

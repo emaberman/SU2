@@ -452,7 +452,11 @@ public:
   inline void AddClippedSolution(unsigned long iPoint, unsigned long iVar, su2double solution,
                                  su2double lowerlimit, su2double upperlimit,
                                  su2double Sol2Conservative = 1.0, su2double Sol2Conservative_old = 1.0) {
-
+    // if (iVar !=0){
+    //   if (Solution(iPoint,0)==0){
+    //     solution =0.0;
+    //   } 
+    // }
     su2double val_new = (Solution_Old(iPoint,iVar)*Sol2Conservative_old + solution)/Sol2Conservative;
     Solution(iPoint,iVar) = min(max(val_new, lowerlimit), upperlimit);
   }

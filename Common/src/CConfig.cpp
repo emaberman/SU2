@@ -1791,6 +1791,7 @@ void CConfig::SetConfig_Options() {
   default_cfl_adapt[3] = 100.0;
   default_cfl_adapt[4] = 0.001;
   default_cfl_adapt[5] = 0.0;
+  
   addDoubleListOption("CFL_ADAPT_PARAM", nCFL_AdaptParam, CFL_AdaptParam);
   /* DESCRIPTION: Reduction factor of the CFL coefficient in the adjoint problem */
   addDoubleOption("CFL_REDUCTION_ADJFLOW", CFLRedCoeff_AdjFlow, 0.8);
@@ -1800,6 +1801,10 @@ void CConfig::SetConfig_Options() {
   addDoubleOption("CFL_REDUCTION_ADJTURB", CFLRedCoeff_AdjTurb, 1.0);
   /*!\brief CFL_REDUCTION_SPECIES \n DESCRIPTION: Reduction factor of the CFL coefficient in the species problem \n DEFAULT: 1.0 */
   addDoubleOption("CFL_REDUCTION_SPECIES", CFLRedCoeff_Species, 1.0);
+  /* DESCRIPTION: Free-stream option to choose cfl adapt method */
+  addEnumOption("CFL_ADAPT_METHOD", Kind_CflAdapt, CFLAdaptOption_Map, CFL_ADAPT_METHOD::SU2);
+  // /* DESCRIPTION: Free-stream option to choose between density and temperature for initializing the solution */
+  // addEnumOption("FREESTREAM_OPTION", Kind_FreeStreamOption, FreeStreamOption_Map, FREESTREAM_OPTION::TEMPERATURE_FS);
   /* DESCRIPTION: External iteration offset due to restart */
   addUnsignedLongOption("EXT_ITER_OFFSET", ExtIter_OffSet, 0);
   // these options share nRKStep as their size, which is not a good idea in general

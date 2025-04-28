@@ -1718,6 +1718,7 @@ void CSolver::AdaptCFLNumber(CGeometry **geometry,
   const su2double CFLMax            = config->GetCFL_AdaptParam(3);
   const su2double acceptableLinTol  = config->GetCFL_AdaptParam(4);
   const su2double startingIter      = config->GetCFL_AdaptParam(5);
+  
   const bool fullComms              = (config->GetComm_Level() == COMM_FULL);
 
   /* Number of iterations considered to check for stagnation. */
@@ -1852,52 +1853,79 @@ void CSolver::AdaptCFLNumber(CGeometry **geometry,
 
       su2double CFL = solverFlow->GetNodes()->GetLocalCFL(iPoint);
 
-      /* Get the current under-relaxation parameters that were computed
-       during the previous nonlinear update. If we have a turbulence model,
-       take the minimum under-relaxation parameter between the mean flow
-       and turbulence systems. */
+      if (config->GetCFL_AdaptMethod() == CFL_ADAPT_METHOD::SU2){
+          /* Get the current under-relaxation parameters that were computed
+        during the previous nonlinear update. If we have a turbulence model,
+        take the minimum under-relaxation parameter between the mean flow
+        and turbulence systems. */
 
-      su2double underRelaxationFlow = solverFlow->GetNodes()->GetUnderRelaxation(iPoint);
-      su2double underRelaxationTurb = 1.0;
-      if ((iMesh == MESH_0) && solverTurb)
-        underRelaxationTurb = solverTurb->GetNodes()->GetUnderRelaxation(iPoint);
-      const su2double underRelaxation = min(underRelaxationFlow,underRelaxationTurb);
+        su2double underRelaxationFlow = solverFlow->GetNodes()->GetUnderRelaxation(iPoint);
+        su2double underRelaxationTurb = 1.0;
+        if ((iMesh == MESH_0) && solverTurb)
+          underRelaxationTurb = solverTurb->GetNodes()->GetUnderRelaxation(iPoint);
+        const su2double underRelaxation = min(underRelaxationFlow,underRelaxationTurb);
 
-      /* If we apply a small under-relaxation parameter for stability,
-       then we should reduce the CFL before the next iteration. If we
-       are able to add the entire nonlinear update (under-relaxation = 1)
-       then we schedule an increase the CFL number for the next iteration. */
+        /* If we apply a small under-relaxation parameter for stability,
+        then we should reduce the CFL before the next iteration. If we
+        are able to add the entire nonlinear update (under-relaxation = 1)
+        then we schedule an increase the CFL number for the next iteration. */
 
-      su2double CFLFactor = 1.0;
-      if (underRelaxation < 0.1 || reduceCFL) {
-        CFLFactor = CFLFactorDecrease;
-      } else if ((underRelaxation >= 0.1 && underRelaxation < 1.0) || !canIncrease) {
-        CFLFactor = 1.0;
-      } else {
-        CFLFactor = CFLFactorIncrease;
+        su2double CFLFactor = 1.0;
+        if (underRelaxation < 0.1 || reduceCFL) {
+          CFLFactor = CFLFactorDecrease;
+        } else if ((underRelaxation >= 0.1 && underRelaxation < 1.0) || !canIncrease) {
+          CFLFactor = 1.0;
+        } else {
+          CFLFactor = CFLFactorIncrease;
+        }
+
+        /* Check if we are hitting the min or max and adjust. */
+
+        if (CFL*CFLFactor <= CFLMin) {
+          CFL       = CFLMin;
+          CFLFactor = MGFactor[iMesh];
+        } else if (CFL*CFLFactor >= CFLMax) {
+          CFL       = CFLMax;
+          CFLFactor = MGFactor[iMesh];
+        }
+
+        /* If we detect a stalled nonlinear residual, then force the CFL
+        for all points to the minimum temporarily to restart the ramp. */
+
+        if (resetCFL) {
+          CFL       = CFLMin;
+          CFLFactor = MGFactor[iMesh];
+        }
+
+        /* Apply the adjustment to the CFL and store local values. */
+
+        CFL *= CFLFactor;
       }
+      
+      if (config->GetCFL_AdaptMethod() == CFL_ADAPT_METHOD::EXP){
+        su2double CFLFactor;
+        
+        if (CFL < CFLMax && canIncrease) { 
+          CFLFactor = CFLFactorIncrease;
+        }
+        else{
+          CFLFactor = 1.0;
+        }
+        
+        CFL *= CFLFactor;
+          
+          if (CFL > CFLMax) {
+              CFL  = CFLMax;
+          }
+              if (CFL < CFLMin) {
+              CFL  = CFLMin;
+          }
+        }
 
-      /* Check if we are hitting the min or max and adjust. */
-
-      if (CFL*CFLFactor <= CFLMin) {
-        CFL       = CFLMin;
-        CFLFactor = MGFactor[iMesh];
-      } else if (CFL*CFLFactor >= CFLMax) {
-        CFL       = CFLMax;
-        CFLFactor = MGFactor[iMesh];
-      }
-
-      /* If we detect a stalled nonlinear residual, then force the CFL
-       for all points to the minimum temporarily to restart the ramp. */
-
-      if (resetCFL) {
-        CFL       = CFLMin;
-        CFLFactor = MGFactor[iMesh];
-      }
-
-      /* Apply the adjustment to the CFL and store local values. */
-
-      CFL *= CFLFactor;
+      
+      
+      
+      
       solverFlow->GetNodes()->SetLocalCFL(iPoint, CFL);
       if ((iMesh == MESH_0) && solverTurb) {
         solverTurb->GetNodes()->SetLocalCFL(iPoint, CFL * CFLTurbReduction);
