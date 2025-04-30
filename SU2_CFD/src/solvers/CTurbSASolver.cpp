@@ -1322,10 +1322,7 @@ void CTurbSASolver::SetTurbVars_WF(CGeometry *geometry, CSolver **solver_contain
         su2double func_prim = 4.0 * pow(nu_til_old,3) - 3.0*(Eddy_Visc/Density_Normal)*pow(nu_til_old,2);
 
         // damped Newton method
-        const su2double fp = relax * max(func/func_prim,0.0);
-        const su2double fm = relax * min(func/func_prim, 0.0);  
-        nu_til = (nu_til_old - fm) / (1 + fp/nu_til_old);
-        // nu_til = nu_til_old - relax*(func/func_prim);
+        nu_til = nu_til_old - relax*(func/func_prim);
 
         diff = fabs(nu_til-nu_til_old);
         nu_til_old = nu_til;
