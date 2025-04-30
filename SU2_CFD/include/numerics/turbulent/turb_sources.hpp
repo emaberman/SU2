@@ -243,7 +243,7 @@ class CSourceBase_TurbSA : public CNumerics {
         var.interDestrFactor = 1.0;
       }
 
-      /*--- Compute production, destruction and cross production and jacobian ---*/
+      /*--- Compute production, destruction, cross production and jacobian ---*/
       su2double Prod_hat = 0.0, Dest_hat = 0.0, CrossProduction = 0.0, jac_hat=0.0, cross_hat=0.0; 
       SourceTerms::get(ScalarVar_i[0], var, Prod_hat, Dest_hat, CrossProduction, jac_hat, cross_hat);
 
@@ -253,7 +253,7 @@ class CSourceBase_TurbSA : public CNumerics {
       const bool upc = config -> GetUPC_TurbJacobian();
       // const bool upc = false;
       
-      if (upc) Jacobian_i[0] +=  min(jac_hat, 0.0) + min(Prod_hat-Dest_hat,0.0); //+ min(cross_hat,0.0); 
+      if (upc) Jacobian_i[0] +=  min(jac_hat, 0.0) + min(Prod_hat-Dest_hat,0.0) + min(cross_hat,0.0); 
       else Jacobian_i[0] += jac_hat+Prod_hat-Dest_hat;
     
       if (axisymmetric) ResidualAxisymmetricDiffusion(var.sigma);
