@@ -2000,7 +2000,7 @@ void CConfig::SetConfig_Options() {
   addConvectOption("CONV_NUM_METHOD_TURB", Kind_ConvNumScheme_Turb, Kind_Centered_Turb, Kind_Upwind_Turb);
 /*!\brief UPC \n DESCRIPTION: Check if the Uconditionally positive convergent (UPC) method should be used for scalar jacobian \ingroup Config*/
   addBoolOption("UPC_TURB", UPC_TurbJac, false);
-  
+
   /*!\brief MUSCL_ADJTURB \n DESCRIPTION: Check if the MUSCL scheme should be used \ingroup Config*/
   addBoolOption("MUSCL_ADJTURB", MUSCL_AdjTurb, false);
   /*!\brief SLOPE_LIMITER_ADJTURB

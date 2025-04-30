@@ -1626,7 +1626,7 @@ public:
    * \return Value of CFL adaption parameter
    */
   su2double GetCFL_AdaptParam(unsigned short val_index) const { return CFL_AdaptParam[val_index]; }
-  
+
   /*!
    * \brief Get the value of the CFL adaption flag.
    * \return <code>TRUE</code> if CFL adaption is active; otherwise <code>FALSE</code>.
@@ -4505,7 +4505,7 @@ public:
    * \brief Get whether to use "UPC Jacobians" for Scalar Upwind scheme.
    * \return yes/no.
    */
-  bool 
+  bool
   GetUPC_TurbJacobian (void) const { return UPC_TurbJac; }
 
   /*!
