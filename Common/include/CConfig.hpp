@@ -786,7 +786,6 @@ private:
   unsigned long StartWindowIteration; /*!< \brief Starting Iteration for long time Windowing apporach . */
   unsigned short nCFL_AdaptParam;     /*!< \brief Number of CFL parameters provided in config. */
   bool CFL_Adapt;                     /*!< \brief Use adaptive CFL number. */
-  CFL_ADAPT_METHOD Kind_CflAdapt;   /*!< \brief method of adaptive CFL. */
   bool HB_Precondition;  /*!< \brief Flag to turn on harmonic balance source term preconditioning */
   su2double RefArea,     /*!< \brief Reference area for coefficient computation. */
   RefElemLength,         /*!< \brief Reference element length for computing the slope limiting epsilon. */
@@ -1627,12 +1626,6 @@ public:
    * \return Value of CFL adaption parameter
    */
   su2double GetCFL_AdaptParam(unsigned short val_index) const { return CFL_AdaptParam[val_index]; }
-  /*!
-   * \brief Get CFL adapt options.
-   * \return cfl adapt type
-   */
-   CFL_ADAPT_METHOD GetCFL_AdaptMethod() const { return Kind_CflAdapt;}
-  //  FREESTREAM_OPTION GetKind_FreeStreamOption() const { return Kind_FreeStreamOption; }
   
   /*!
    * \brief Get the value of the CFL adaption flag.

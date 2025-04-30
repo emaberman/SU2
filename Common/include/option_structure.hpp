@@ -1527,19 +1527,6 @@ static const MapType<std::string, WALL_FUNCTIONS> Wall_Functions_Map = {
 };
 
 /*!
- * \brief Types of freestream specification
- */
- enum class CFL_ADAPT_METHOD {
-  SU2, /*!< \brief SU2 Scheme. */
-  EXP, /*!< \brief Exponatial growth. */
-};
-static const MapType<std::string, CFL_ADAPT_METHOD> CFLAdaptOption_Map = {
-  MakePair("SU2", CFL_ADAPT_METHOD::SU2)
-  MakePair("EXP", CFL_ADAPT_METHOD::EXP)
-};
-
-
-/*!
  * \brief Type of time integration schemes
  */
 enum ENUM_TIME_INT {

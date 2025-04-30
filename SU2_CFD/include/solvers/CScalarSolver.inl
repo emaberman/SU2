@@ -446,7 +446,8 @@ void CScalarSolver<VariableType>::BC_Far_Field(CGeometry* geometry, CSolver** so
       /*--- Set Normal (it is necessary to change the sign) ---*/
 
       su2double Normal[MAXNDIM] = {0.0};
-      for (auto iDim = 0u; iDim < nDim; iDim++) Normal[iDim] = -geometry->vertex[val_marker][iVertex]->GetNormal(iDim);
+      for (auto iDim = 0u; iDim < nDim; iDim++) 
+      Normal[iDim] = -geometry->vertex[val_marker][iVertex]->GetNormal(iDim);
       conv_numerics->SetNormal(Normal);
 
       if (conv_numerics->GetBoundedScalar()) {
